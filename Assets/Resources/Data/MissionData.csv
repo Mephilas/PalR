@@ -1,0 +1,11 @@
+MissionID,IsMainMission,Name,Description,MissionType,Require,EventData
+0,TRUE,干活,招待客人,Dialogue,70,MissionBegin`1
+1,TRUE,清场,赶走醉道士,Dialogue,88,MissionBegin`2
+2,TRUE,进货,去东侧码头买虾,Dialogue,251,MissionBegin`3
+3,TRUE,求药,前往仙灵岛求药,Dialogue,452,MissionBegin`4
+4,TRUE,赴约,前往十里坡赴约,Dialogue,509,MissionBegin`5
+5,TRUE,闲逛,在客栈内逛逛,Dialogue,556,MissionBegin`6
+6,TRUE,探查,返回仙灵岛查看,Dialogue,633,MissionBegin`7
+7,TRUE,返程,返回客栈休憩,Dialogue,750,MissionBegin`8
+8,TRUE,出游,前往苏州,Dialogue,760,MissionBegin`9
+9,TRUE,入城,进入苏州城,Dialogue,0,
