@@ -74,7 +74,7 @@ public sealed class StatePanel : UIPanelBase
         Select(_selectIndex);
     }
 
-    public override void Active()
+    public override void Active(string[] argumentArray = null)
     {
         base.Active();
 

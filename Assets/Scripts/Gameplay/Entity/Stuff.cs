@@ -1,7 +1,7 @@
 using UnityEngine;
 
 /// <summary>
-/// ³¡¾°µÀ¾ß
+/// åœºæ™¯é“å…·
 /// </summary>
 public class Stuff : SpriteBase
 {

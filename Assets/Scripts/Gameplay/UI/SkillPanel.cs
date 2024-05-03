@@ -25,7 +25,7 @@ public sealed class SkillPanel : UIPanelBase
     /// <summary>
     /// 角色集合
     /// </summary>
-    private static SkillPlayer[] _playerArray;
+    private static PlayerProfile[] _playerArray;
 
     /// <summary>
     /// 自适应最大列数
@@ -45,7 +45,7 @@ public sealed class SkillPanel : UIPanelBase
     /// <summary>
     /// 技能集合
     /// </summary>
-    private static Selector[] _skillArray;
+    private static TextSelector[] _skillArray;
 
     /// <summary>
     /// 物品矩阵
@@ -321,7 +321,7 @@ public sealed class SkillPanel : UIPanelBase
         }
     }
 
-    public override void Active()
+    public override void Active(string[] argumentArray = null)
     {
         base.Active();
 
@@ -329,11 +329,11 @@ public sealed class SkillPanel : UIPanelBase
 
         _costMP.text = _currentMP.text = _description.text = null;
 
-        for (int i = 0; i != _playerArray.Length; i++)
-            _playerArray[i].Hide();
-
         for (int i = 0; i != _skillArray.Length; i++)
             _skillArray[i].Clear();
+
+        for (int i = 0; i != _playerArray.Length; i++)
+            _playerArray[i].Hide();
 
         for (int i = 0; i != GameManager_.PlayerList.Count; i++)
         {

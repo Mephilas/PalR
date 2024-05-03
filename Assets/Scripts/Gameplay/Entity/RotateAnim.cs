@@ -2,17 +2,17 @@ using UnityEngine;
 using DG.Tweening;
 
 /// <summary>
-/// 旋转动画
+/// 鏃嬭浆鍔ㄧ敾
 /// </summary>
 public sealed class RotateAnim : SpriteBase
 {
     /// <summary>
-    /// 旋转时间
+    /// 鏃嬭浆鏃堕暱
     /// </summary>
-    private const float ROTATE_TIME = 2f;
+    private const float ROTATE_DURATION = 2;
 
     /// <summary>
-    /// 旋转角度
+    /// 鏃嬭浆瑙掑害
     /// </summary>
     private static readonly Vector3 ROTATE_ANGLE = new(0, 0, 5);
 
@@ -23,7 +23,7 @@ public sealed class RotateAnim : SpriteBase
         Rotate2L();
     }
 
-    private void Rotate2L() => Transform.DOLocalRotate(-ROTATE_ANGLE, ROTATE_TIME).onComplete = Rotate2R;
+    private void Rotate2L() => Transform.DOLocalRotate(-ROTATE_ANGLE, ROTATE_DURATION).onComplete = Rotate2R;
 
-    private void Rotate2R() => Transform.DOLocalRotate(ROTATE_ANGLE, ROTATE_TIME).onComplete = Rotate2L;
+    private void Rotate2R() => Transform.DOLocalRotate(ROTATE_ANGLE, ROTATE_DURATION).onComplete = Rotate2L;
 }

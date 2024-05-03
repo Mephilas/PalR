@@ -12,11 +12,13 @@ public sealed class Root_ : SingletonBase<Root_>
     private static readonly Type[] MANAGER_ARRAY = new Type[]
     {
         typeof(DataManager_),
-        typeof(AudioManager_),
         typeof(UIManager_),
         typeof(GameManager_),
+        typeof(AudioManager_),
         typeof(MissionManager_)
     };
+
+    private static UnityEngine.UI.Text _fpsT, _logT;
 
     protected override void Awake()
     {
@@ -26,27 +28,37 @@ public sealed class Root_ : SingletonBase<Root_>
 
         Application.targetFrameRate = 120;
 
-        //StartCoroutine(nameof(FPS), CGC<UnityEngine.UI.Text>("Canvas_/FPS"));
+        _fpsT = CGC<UnityEngine.UI.Text>("DevelopCanvas/FPS");
+
+        _logT = CGC<UnityEngine.UI.Text>("DevelopCanvas/Log");
+
+        StartCoroutine(nameof(FPS));
 
         for (int i = 0; i != MANAGER_ARRAY.Length; i++)
             gameObject.AddComponent(MANAGER_ARRAY[i]);
 
-        //ToolsE.LogWarning(Application.consoleLogPath);
-        //ToolsE.LogWarning(Application.dataPath);
-        //ToolsE.LogWarning(Application.persistentDataPath);
-        //ToolsE.LogWarning(Application.streamingAssetsPath);
-        //ToolsE.LogWarning(Application.temporaryCachePath);
+        /*ToolsE.LogWarning(Application.consoleLogPath);
+        ToolsE.LogWarning(Application.dataPath);
+        ToolsE.LogWarning(Application.persistentDataPath);
+        ToolsE.LogWarning(Application.streamingAssetsPath);
+        ToolsE.LogWarning(Application.temporaryCachePath);*/
     }
 
-    /*private System.Collections.IEnumerator FPS(UnityEngine.UI.Text text)
+    private System.Collections.IEnumerator FPS()
     {
         while (true)
         {
-            text.text = ((int)(1 / Time.deltaTime)).ToString();
+            _fpsT.text = ((int)(1 / Time.deltaTime)).ToString();
 
             yield return Const.WAIT_FOR_1S;
         }
-    }*/
+    }
+
+    /// <summary>
+    /// 屏幕输出
+    /// </summary>
+    /// <param name="text"></param>
+    public static void ScreenLog(string text) => _logT.text += text + Const.SPLIT_RN;
 
     /// <summary>
     /// 除错
@@ -57,10 +69,6 @@ public sealed class Root_ : SingletonBase<Root_>
     private static void Bug(string log, string stackTrace, LogType type)
     {
         if (type == LogType.Error || type == LogType.Exception || type == LogType.Assert)
-        {
             ToolsE.RuntimeDebug(log + Const.SPLIT_RN + Const.SPLIT_RN + stackTrace);
-
-            //Application.Quit();
-        }
     }
 }

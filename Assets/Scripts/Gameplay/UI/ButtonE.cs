@@ -39,6 +39,15 @@ public sealed class ButtonE : UIBase_, IPointerDownHandler, IPointerUpHandler, I
     /// </summary>
     private UnityAction _method;
 
+    public UnityEngine.UI.MaskableGraphic UI { get; set; }
+
+    protected override void Awake()
+    {
+        base.Awake();
+
+        UI = GC<UnityEngine.UI.MaskableGraphic>();
+    }
+
     public void OnPointerDown(PointerEventData eventData)
     {
         if (!_clickOrHold)
@@ -81,13 +90,7 @@ public sealed class ButtonE : UIBase_, IPointerDownHandler, IPointerUpHandler, I
     /// <summary>
     /// 调用
     /// </summary>
-    private void Invoke()
-    {
-        if (null == _method)
-            ToolsE.LogWarning("Method is null : " + name);
-        else
-            _method();
-    }
+    private void Invoke() => _method?.Invoke();
 
     /// <summary>
     /// 初始化

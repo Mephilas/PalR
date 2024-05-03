@@ -1,5 +1,5 @@
 /// <summary>
-/// Ò»´ÎĞÔ³¡¾°µÀ¾ß¶¯»­
+/// ä¸€æ¬¡æ€§åœºæ™¯é“å…·åŠ¨ç”»
 /// </summary>
 public sealed class StuffAnimOneShot : StuffAnim
 {

@@ -8,7 +8,7 @@ public sealed class TradePanel : UIPanelBase
     /// <summary>
     /// 选择器集合
     /// </summary>
-    private static Selector[] _selectorArray;
+    private static TextSelector[] _selectorArray;
 
     /// <summary>
     /// 物品图标
@@ -94,7 +94,7 @@ public sealed class TradePanel : UIPanelBase
         _countT.text = GameManager_.Bag.ContainsKey(SelectItem.ID) ? GameManager_.Bag[SelectItem.ID].ToString() : "0";
     }
 
-    public override void Active()
+    public override void Active(string[] argumentArray = null)
     {
         base.Active();
 

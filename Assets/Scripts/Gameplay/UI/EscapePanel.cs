@@ -13,7 +13,7 @@ public sealed class EscapePanel : UIPanelBase
     /// <summary>
     /// 选择器集合
     /// </summary>
-    private static Selector[] _selectorArray;
+    private static TextSelector[] _selectorArray;
 
     /// <summary>
     /// 上轮序号
@@ -31,7 +31,7 @@ public sealed class EscapePanel : UIPanelBase
 
         AC<ButtonE>().Init(Escape);
 
-        CGX(ref _copperT, "CopperBG/Value");
+        CGC(ref _copperT, "CopperBG/Value");
         CGC(ref _selectorArray);
 
         GameManager_.CopperTUpdate += CopperTUpdate;
@@ -92,7 +92,7 @@ public sealed class EscapePanel : UIPanelBase
         _selectorArray[_lastIndex = index].Select();
     }
 
-    public override void Active()
+    public override void Active(string[] argumentArray = null)
     {
         base.Active();
 

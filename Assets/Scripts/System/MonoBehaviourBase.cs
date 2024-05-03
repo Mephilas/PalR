@@ -1,6 +1,5 @@
 using System;
 using UnityEngine;
-using UnityEngine.UI;
 
 /// <summary>
 /// 自定义基类
@@ -128,6 +127,11 @@ public abstract class MonoBehaviourBase : MonoBehaviour
     {
 
     }
+
+    /// <summary>
+    /// 隐藏
+    /// </summary>
+    public virtual void Hide() => Transform.localPosition = Const.HIDDEN_P;
 
     /// <summary>
     /// 添加组件

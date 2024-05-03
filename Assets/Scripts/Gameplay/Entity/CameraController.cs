@@ -4,22 +4,22 @@ using DG.Tweening.Core;
 using DG.Tweening.Plugins.Options;
 
 /// <summary>
-/// ÉãÏñ»ú¿ØÖÆÆ÷
+/// æ‘„åƒæœºæ§åˆ¶å™¨
 /// </summary>
-public sealed class CameraController : MonoBehaviourBase
+public sealed class CameraController : SingletonBase<CameraController>
 {
     /// <summary>
-    /// ¸úËæÆ«ÒÆ
+    /// è·Ÿéšåç§»
     /// </summary>
-    private static readonly Vector3 FOLLOW_OFFSET = new(0, 5, -0.09f);
+    private static readonly Vector3 FOLLOW_OFFSET = new(0, 1, -0.09f);
 
     /// <summary>
-    /// Ö÷Ïà»ú
+    /// ä¸»ç›¸æœº
     /// </summary>
     public static Camera Camera { get; private set; }
 
     /// <summary>
-    /// ¸úËæ¿ª¹Ø
+    /// è·Ÿéšå¼€å…³
     /// </summary>
     private static bool _follow = true;
 
@@ -66,7 +66,7 @@ public sealed class CameraController : MonoBehaviourBase
         _moveDT.Kill();
         GameManager_.Trigger(UIPanelBase.NULL_PANEL_EVENT);
 
-        (_moveDT = Transform.DOMove(ToolsE.SA2V(data), float.Parse(data[0]))).onComplete = () =>
+        (_moveDT = Transform.DOMove(data.SA2V3(), float.Parse(data[0]))).onComplete = () =>
         {
             if (4 < data.Length) GameManager_.Trigger(new(GameEventType.Dialogue, data[4]));
         };

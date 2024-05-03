@@ -18,7 +18,7 @@ public sealed class UsePanel : UIPanelBase
     /// <summary>
     /// 选择器集合
     /// </summary>
-    private static Selector[] _userArray;
+    private static TextSelector[] _userArray;
 
     /// <summary>
     /// 上轮序号
@@ -71,7 +71,7 @@ public sealed class UsePanel : UIPanelBase
         _userArray[_lastIndex = index].Select();
     }
 
-    public override void Active()
+    public override void Active(string[] argumentArray = null)
     {
         base.Active();
 

@@ -9,6 +9,11 @@ using System.Collections.Generic;
 public abstract class UIPanelBase : UIBase_
 {
     /// <summary>
+    /// 面板返回事件
+    /// </summary>
+    public static readonly GameEventData PANEL_RETURN_EVENT = new(GameEventType.UIPanelReturn);
+
+    /// <summary>
     /// 空面板事件
     /// </summary>
     public static readonly GameEventData NULL_PANEL_EVENT = new(GameEventType.UIPanel, UIPanel.NullPanel.ToString());
@@ -34,6 +39,11 @@ public abstract class UIPanelBase : UIBase_
     protected static readonly GameEventData ITEM_PANEL_EVENT = new(GameEventType.UIPanel, UIPanel.ItemPanel.ToString());
 
     /// <summary>
+    /// 物品面板事件
+    /// </summary>
+    protected static readonly GameEventData BATTLE_PANEL_EVENT = new(GameEventType.UIPanel, UIPanel.BattlePanel.ToString());
+
+    /// <summary>
     /// 存档面板事件
     /// </summary>
     protected static readonly GameEventData SL_PANEL_EVENT = new(GameEventType.UIPanel, new string[] { UIPanel.SLPanel.ToString(), "False" });
@@ -47,6 +57,11 @@ public abstract class UIPanelBase : UIBase_
     /// 激活
     /// </summary>
     protected bool IsActive { get; private set; }
+
+    /// <summary>
+    /// 输入开关
+    /// </summary>
+    public bool InputSwitch { get; protected set; } = true;
 
     /// <summary>
     /// 按下输入层
@@ -84,7 +99,8 @@ public abstract class UIPanelBase : UIBase_
     /// <summary>
     /// 激活
     /// </summary>
-    public virtual void Active()
+    /// <param name="argumentArray">可选参数列表</param>
+    public virtual void Active(string[] argumentArray = null)
     {
         if (!IsActive)
         {
@@ -96,8 +112,9 @@ public abstract class UIPanelBase : UIBase_
     }
 
     /// <summary>
-    /// 停止
+    /// 失活
     /// </summary>
+    /// <param name="hide">隐藏/冻结</param>
     public virtual void Inactive(bool hide)
     {
         if (IsActive)

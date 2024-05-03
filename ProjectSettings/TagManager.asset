@@ -9,6 +9,8 @@ TagManager:
   - Portal
   - Stuff
   - Role
+  - Hostile
+  - BattleRole
   layers:
   - Default
   - TransparentFX
@@ -17,8 +19,8 @@ TagManager:
   - Water
   - UI
   - Role
-  - 
-  - 
+  - Hostile
+  - BattleRole
   - 
   - 
   - 

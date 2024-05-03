@@ -18,7 +18,7 @@ public sealed class EquipPanel : UIPanelBase
     /// <summary>
     /// 使用者集合
     /// </summary>
-    private static Selector[] _selectorArray;
+    private static TextSelector[] _selectorArray;
 
     /// <summary>
     /// 描述
@@ -91,7 +91,7 @@ public sealed class EquipPanel : UIPanelBase
         _selectorArray[_lastIndex = index].Select();
     }
 
-    public override void Active()
+    public override void Active(string[] argumentArray = null)
     {
         base.Active();
 

@@ -7,7 +7,7 @@ using DG.Tweening;
 /// <summary>
 /// 角色
 /// </summary>
-public partial class Role : SpriteBase
+public partial class Role : SpriteBase, System.IComparable<Role>
 {
     //Property
     #region
@@ -103,6 +103,11 @@ public partial class Role : SpriteBase
     public int Experience { get; private set; }
 
     /// <summary>
+    /// 存活
+    /// </summary>
+    public bool IsAlive { get { return 0 < HP; } }
+
+    /// <summary>
     /// 体力
     /// </summary>
     public int HP { get; private set; }
@@ -170,7 +175,12 @@ public partial class Role : SpriteBase
     /// <summary>
     /// 跟随开关
     /// </summary>
-    public bool FollowSwitch { get; set; }
+    private bool _followSwitch;
+
+    /// <summary>
+    /// 传送位置
+    /// </summary>
+    private Vector3 _portalP;
 
     /// <summary>
     /// 玩家存档数据
@@ -219,6 +229,8 @@ public partial class Role : SpriteBase
     {
         base.Awake();
 
+        gameObject.layer = LayerMask.NameToLayer(tag = GetType().Name);
+
         CharacterC = GC<CharacterController>();
 
         RoleEffectDic.Add(RoleEffectType.Dialogue, Dialogue);
@@ -242,6 +254,27 @@ public partial class Role : SpriteBase
         base.LateUpdate();
 
         Follow();
+
+        if (IsMoving) SortingOrder();
+    }
+
+    protected override void OnTriggerEnter(Collider other)
+    {
+        base.OnTriggerEnter(other);
+
+        //ToolsE.LogWarning(other.gameObject);
+
+        if (other.gameObject.CompareTag("Portal"))
+        {
+            string[] exitPath = DataManager_.PortalDataDic[ColliderPath()].Split(Const.SPLIT_1);
+            _portalP = Root_.Instance.CGC<Transform>(exitPath[0]).position;
+            GameManager_.Trigger(new(GameEventType.RoleTransfer, new string[] { RoleData.ID.ToString(), _portalP.x.ToString(), _portalP.y.ToString(), (_portalP.z * 0.833).ToString() }));
+        }
+        else if (other.gameObject.CompareTag("Trigger") && CompareTag(nameof(Player)))
+            GameManager_.TriggerAll(DataManager_.MapEventDataDic[ColliderPath()]);
+
+
+        string ColliderPath() => other.transform.parent.name + Const.SPLIT_3 + other.name;
     }
 
     /// <summary>
@@ -264,13 +297,7 @@ public partial class Role : SpriteBase
         GameManager_.Trigger(new(GameEventType.RoleState, new string[] { RoleData.ID.ToString(), "0" }));
         Experience = 0;
         Level = 1;
-        HP = HPMax = RoleData.HPBase;
-        MP = MPMax = RoleData.MPBase;
-        Attack = RoleData.AttackBase;
-        Magic = RoleData.MagicBase;
-        Defense = RoleData.DefenseBase;
-        Speed = RoleData.SpeedBase;
-        Luck = RoleData.LuckBase;
+        BattleDataClone();
 
         if (null != RoleData.DefaultOutfit)
         {
@@ -279,9 +306,40 @@ public partial class Role : SpriteBase
                 GameManager_.Trigger(new(GameEventType.ItemAdd, RoleData.DefaultOutfit[i].ToString()));
                 GameManager_.Trigger(new(GameEventType.ItemEquip, new string[] { RoleData.ID.ToString(), RoleData.DefaultOutfit[i].ToString() }));
             }
+        }
 
+        if (null != RoleData.DefaultSkill)
+        {
             for (int i = 0; i != RoleData.DefaultSkill.Length; i++)
                 SkillList.Add(RoleData.DefaultSkill[i]);
+        }
+    }
+
+    /// <summary>
+    /// 战斗数据复制
+    /// </summary>
+    protected void BattleDataClone(Role source = null)
+    {
+        HP = HPMax = RoleData.HPBase;
+        MP = MPMax = RoleData.MPBase;
+        Attack = RoleData.AttackBase;
+        Magic = RoleData.MagicBase;
+        Defense = RoleData.DefenseBase;
+        Speed = RoleData.SpeedBase;
+        Luck = RoleData.LuckBase;
+
+        if (null != source)
+        {
+            HP = source.HP;
+            MP = source.MP;
+
+            if (OutfitDic.ContainsKey(OutfitType.Bracers))
+                OutfitDic[OutfitType.Bracers] = source.OutfitDic[OutfitType.Bracers];
+            else
+                OutfitDic.Add(OutfitType.Bracers, source.OutfitDic[OutfitType.Bracers]);
+
+            for (int i = 0; i != source.SkillList.Count; i++)
+                SkillList.Add(source.SkillList[i]);
         }
     }
 
@@ -316,11 +374,16 @@ public partial class Role : SpriteBase
     public virtual void InputHandle(InputType keyCode) { }
 
     /// <summary>
+    /// 是否移动
+    /// </summary>
+    protected virtual bool IsMoving { get; set; }
+
+    /// <summary>
     /// 跟随
     /// </summary>
     private void Follow()
     {
-        if (FollowSwitch)
+        if (_followSwitch)
         {
             Transform.localPosition = GameManager_.Leader.Transform.localPosition - MOVE_INPUT_DIC[GameManager_.Leader.CurrentKeyCode].normalized * 0.25f;
             SpriteRenderer.sprite = RoleData.CurrentAnimDic[GameManager_.Leader.CurrentKeyCode][int.Parse(GameManager_.Leader.SpriteRenderer.sprite.name)];
@@ -344,7 +407,7 @@ public partial class Role : SpriteBase
     /// <summary>
     /// 离队
     /// </summary>
-    public void Leave() => PlayerSwitch(FollowSwitch = false);
+    public void Leave() => PlayerSwitch(IsMoving = _followSwitch = false);
 
     /// <summary>
     /// 移动完成
@@ -383,14 +446,21 @@ public partial class Role : SpriteBase
     }
 
     /// <summary>
+    /// 角色效果触发
+    /// </summary>
+    /// <param name="roleEffectType">角色效果</param>
+    /// <param name="value">效果数值</param>
+    public void Trigger(ItemEvent itemEvent) => RoleEffectDic[itemEvent.RoleEffectType].Invoke(itemEvent.EffectValue);
+
+    /// <summary>
     /// 角色效果全部触发
     /// </summary>
     /// <param name="roleEffectArray">角色效果集合</param>
     /// <param name="valueArray">效果数值集合</param>
-    public void Trigger(RoleEffectType[] roleEffectArray, int[] valueArray)
+    public void Trigger(List<ItemEvent> itemEventList)
     {
-        for (int i = 0; i != roleEffectArray.Length; i++)
-            Trigger(roleEffectArray[i], valueArray[i]);
+        for (int i = 0; i != itemEventList.Count; i++)
+            Trigger(itemEventList[i]);
     }
 
     /// <summary>
@@ -401,8 +471,8 @@ public partial class Role : SpriteBase
     {
         if (ExperienceClean) Experience = 0;
 
-        if (RoleData.LevelSkillDic.ContainsKey(++Level))
-            SkillList.Add(RoleData.LevelSkillDic[Level]);
+        if (RoleData.LevelLearnSkillDic.ContainsKey(++Level))
+            SkillList.Add(RoleData.LevelLearnSkillDic[Level]);
 
         HP = Random.Range(RoleData.HP_GROW_MIN, RoleData.HP_GROW_MAX + 1);
         MP = Random.Range(RoleData.MP_GROW_MIN, RoleData.MP_GROW_MAX + 1);
@@ -438,8 +508,6 @@ public partial class Role : SpriteBase
     /// <returns></returns>
     private IEnumerator SpecialAnimC()
     {
-        if (0 == CurrentAnimArray.Length) throw new System.Exception("Anim array length is 0, ID : " + RoleData.ID);
-
         do
         {
             for (int i = 0; i != CurrentAnimArray.Length; i++)
@@ -471,8 +539,7 @@ public partial class Role : SpriteBase
     {
         ItemData item = DataManager_.ItemDataArray[int.Parse(data[1])];
 
-        foreach (RoleEffectType roleEffectType in item.EventDic.Keys)
-            Trigger(roleEffectType, item.EventDic[roleEffectType]);
+        Trigger(item.EventList);
 
         GameManager_.Trigger(new(GameEventType.ItemAdd, new string[] { item.ID.ToString(), "-1" }));
     }
@@ -502,13 +569,21 @@ public partial class Role : SpriteBase
     /// <param name="equipOrRemove">穿/卸</param>
     private void Equip(ItemData outfit, bool equipOrRemove)
     {
-        foreach (RoleEffectType roleEffectType in outfit.EventDic.Keys)
-            Trigger(roleEffectType, equipOrRemove ? outfit.EventDic[roleEffectType] : -outfit.EventDic[roleEffectType]);
+        for (int i = 0; i != outfit.EventList.Count; i++)
+            Trigger(outfit.EventList[i].RoleEffectType, equipOrRemove ? outfit.EventList[i].EffectValue : -outfit.EventList[i].EffectValue);
 
         GameManager_.Trigger(new(GameEventType.ItemAdd, new string[] { outfit.ID.ToString(), (equipOrRemove ? -1 : 1).ToString() }));
         if (!equipOrRemove) ItemPanel.SelectItem = DataManager_.ItemDataArray[outfit.ID];
     }
 
+    /// <summary>
+    /// 排序，后续根据身法调整
+    /// </summary>
+    /// <param name="role"></param>
+    /// <returns></returns>
+    public int CompareTo(Role role) => RoleData.ID - role.RoleData.ID;
+
+    public void RoleFollow(string[] data) => IsMoving = _followSwitch = bool.Parse(data[1]);
     public void RoleState(string[] data)
     {
         RoleData.Pseudonym = null;
@@ -520,7 +595,7 @@ public partial class Role : SpriteBase
         bool isPortal;
         if (isPortal = this == GameManager_.Leader && UIManager_.PanelCompare(UIPanel.BasicPanel)) MovementSwitch(false);
 
-        Transform.localPosition = ToolsE.SA2V(data).Planarizaty();
+        Transform.localPosition = data.SA2V3().Planarization();
         SortingOrder();
 
         if (5 == data.Length)
@@ -530,10 +605,12 @@ public partial class Role : SpriteBase
     }
     public void RoleMove(string[] data)
     {
-        Transform.DOLocalMove(ToolsE.SA2V(data), float.Parse(data[4])).onComplete =
-            () => { if (5 < data.Length) GameManager_.Trigger(new(GameEventType.Dialogue, data[5])); };
+        IsMoving = true;
 
-        SortingOrder();
+        Transform.DOLocalMove(data.SA2V3(), float.Parse(data[4])).onComplete =
+            () => { if (5 < data.Length) GameManager_.Trigger(new(GameEventType.Dialogue, data[5])); IsMoving = false; };
+
+        //SortingOrder();
     }
     public void RoleRotate(string[] data)
     {
@@ -562,9 +639,18 @@ public partial class Role : SpriteBase
             SpriteRenderer.flipY = bool.Parse(data[2]);
         }
     }
+    public void Anim(string[] data)
+    {
+        StopCoroutine(nameof(AnimationC));
+
+        CurrentAnimArray = RoleData.CurrentBattleAnimDic[data[1].S2E<BattleAnimType>()];
+
+        StartCoroutine(nameof(AnimationC));
+    }
     public void SpecialAnim(string[] data)
     {
         StopCoroutine(nameof(SpecialAnimC));
+
         CurrentAnimArray = RoleData.SpecialAnimDic[data[1].S2E<SpecialAnimType>()];
 
         if (bool.Parse(data[2]))
@@ -580,7 +666,7 @@ public partial class Role : SpriteBase
         int index = 5;
 
         //ToolsE.LogWarning(data);
-        GameManager_.Trigger(new(GameEventType.RoleTransfer, ToolsE.SACut(data, index)));
+        GameManager_.Trigger(new(GameEventType.RoleTransfer, data.SACut(index)));
         foreach (int outfitID in OutfitDic.Values)
             Equip(DataManager_.ItemDataArray[outfitID], false);
 
@@ -725,9 +811,9 @@ public enum SpecialAnimType
     Hug,
 
     /// <summary>
-    /// 受伤
+    /// 躺
     /// </summary>
-    Hurt,
+    Lie,
 
     /// <summary>
     /// 下跪
@@ -793,4 +879,51 @@ public enum SpecialAnimType
     /// 沉睡
     /// </summary>
     Slumber,
+}
+
+
+/// <summary>
+/// 战斗动画
+/// </summary>
+public enum BattleAnimType
+{
+    /// <summary>
+    /// 死亡
+    /// </summary>
+    Decease,
+
+    /// <summary>
+    /// 防御
+    /// </summary>
+    Defense,
+
+    /// <summary>
+    /// 濒死
+    /// </summary>
+    Dying,
+
+    /// <summary>
+    /// 受击
+    /// </summary>
+    Hurt,
+
+    /// <summary>
+    /// 闲置
+    /// </summary>
+    Idle,
+
+    /// <summary>
+    /// 普通攻击
+    /// </summary>
+    NormalAttack,
+
+    /// <summary>
+    /// 技能
+    /// </summary>
+    Skill,
+
+    /// <summary>
+    /// 特殊技能
+    /// </summary>
+    SpecialSkill
 }

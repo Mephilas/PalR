@@ -48,7 +48,7 @@ public sealed class Player : Role
     /// <summary>
     /// 是否移动
     /// </summary>
-    private bool IsMoving { get { return Vector3.zero != _moveV; } }
+    protected override bool IsMoving { get { return Vector3.zero != _moveV; } }
 
     /// <summary>
     /// 空闲判断
@@ -64,11 +64,6 @@ public sealed class Player : Role
     /// 出售物品
     /// </summary>
     public static int[] SellItem { get { return _interactRole.RoleData.SellItem; } }
-
-    /// <summary>
-    /// 传送位置
-    /// </summary>
-    private Vector3 _portalP;
 
     protected override void Awake()
     {
@@ -92,17 +87,12 @@ public sealed class Player : Role
     {
         base.OnTriggerEnter(other);
 
-        if (other.gameObject.CompareTag("Portal"))
+        if (GameManager_.InGame && this == GameManager_.Leader && other.CompareTag(nameof(Hostile)))
         {
-            string[] exitPath = DataManager_.PortalDataDic[ColliderPath()].Split(Const.SPLIT_1);
-            _portalP = Root_.Instance.CGC<Transform>(exitPath[0]).position;
-            GameManager_.Trigger(new(GameEventType.RoleTransfer, new string[] { RoleData.ID.ToString(), _portalP.x.ToString(), _portalP.y.ToString(), (_portalP.z / 1.2f).ToString() }));
+            GameManager_.Trigger(new(GameEventType.Battle, other.GetComponent<Hostile>().RoleData.ID.ToString()));
+
+            other.GetComponent<Hostile>().Hide();
         }
-        else if (other.gameObject.CompareTag("Trigger") && CompareTag(nameof(Player)))
-            GameManager_.TriggerAll(DataManager_.MapEventDataDic[ColliderPath()]);
-
-
-        string ColliderPath() => other.transform.parent.name + Const.SPLIT_3 + other.name;
     }
 
     /// <summary>
@@ -195,6 +185,6 @@ public sealed class Player : Role
 
         CharacterC.Move((_moveV = MOVE_INPUT_DIC[CurrentKeyCode]).normalized * (MOVE_SPEED * Time.deltaTime));
 
-        SortingOrder();
+        //SortingOrder();
     }
 }

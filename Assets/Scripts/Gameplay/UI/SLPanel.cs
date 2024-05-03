@@ -11,7 +11,7 @@ public sealed class SLPanel : UIPanelBase
     /// <summary>
     /// 选择器集合
     /// </summary>
-    private static Selector[] _selectorArray;
+    private static TextSelector[] _selectorArray;
 
     /// <summary>
     /// 上轮序号
@@ -43,12 +43,14 @@ public sealed class SLPanel : UIPanelBase
     protected override void Up()
     {
         if (-1 == --_currentIndex) _currentIndex = _selectorArray.Last();
+
         Select(_currentIndex);
     }
 
     protected override void Down()
     {
         if (_selectorArray.Length == ++_currentIndex) _currentIndex = 0;
+
         Select(_currentIndex);
     }
 
@@ -86,7 +88,7 @@ public sealed class SLPanel : UIPanelBase
         }
     }
 
-    public override void Active()
+    public override void Active(string[] argumentArray = null)
     {
         base.Active();
 

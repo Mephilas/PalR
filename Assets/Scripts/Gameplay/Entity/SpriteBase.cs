@@ -23,5 +23,5 @@ public abstract class SpriteBase : MonoBehaviourBase
     /// <summary>
     /// 层级更新
     /// </summary>
-    protected void SortingOrder() => SpriteRenderer.sortingOrder = (short)(Transform.position.z * -100);
+    protected virtual void SortingOrder() => SpriteRenderer.sortingOrder = (short)(Transform.position.z * -10);
 }

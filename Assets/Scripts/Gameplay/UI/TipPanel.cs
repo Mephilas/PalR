@@ -42,7 +42,7 @@ public sealed class TipPanel : UIPanelBase
 
         AC<ButtonE>().Init(Escape);
         CGC(ref _tipBG, "BG");
-        CGRT(ref _tipBGT, "BG");
+        CGC(ref _tipBGT, "BG");
         CGC(ref _tipT, "Tip");
 
         GameManager_.Register(GameEventType.Tip, TipStart);
@@ -77,7 +77,7 @@ public sealed class TipPanel : UIPanelBase
     /// </summary>
     private void TipEnd()
     {
-        GameManager_.Trigger(BASIC_PANEL_EVENT);
+        GameManager_.Trigger(PANEL_RETURN_EVENT);
 
         if (null != _tipData.EventArray) GameManager_.TriggerAll(_tipData.EventArray);
     }

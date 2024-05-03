@@ -1,5 +1,5 @@
 /// <summary>
-/// ±¦ІШ
+/// е®ќи—Џ
 /// </summary>
 public sealed class Vault : Device
 {

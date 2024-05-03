@@ -16,7 +16,7 @@ public sealed class ChoosePanel : UIPanelBase
     /// <summary>
     /// 选择器集合
     /// </summary>
-    private static Selector[] _selectorArray;
+    private static TextSelector[] _selectorArray;
 
     /// <summary>
     /// 上轮序号
@@ -80,7 +80,7 @@ public sealed class ChoosePanel : UIPanelBase
         _selectorArray[1].Init(() => Select(_currentIndex = 1), () => { GameManager_.Trigger(BASIC_PANEL_EVENT); GameManager_.TriggerAll(_chooseData.RefuseEventArray); });
     }
 
-    public override void Active()
+    public override void Active(string[] argumentArray = null)
     {
         base.Active();
 

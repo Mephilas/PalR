@@ -1,7 +1,5 @@
 using UnityEngine;
-using UnityEngine.UI;
 using System.Collections.Generic;
-using UnityEngine.Events;
 
 /// <summary>
 /// 基础面板
@@ -11,7 +9,13 @@ public sealed class BasicPanel : UIPanelBase
     /// <summary>
     /// 输入层
     /// </summary>
-    private readonly Dictionary<KeyCode, UnityAction> _inputActionDic = new() { { KeyCode.UpArrow, MoveUp }, { KeyCode.DownArrow, MoveDown }, { KeyCode.LeftArrow, MoveLeft }, { KeyCode.RightArrow, MoveRight } };
+    private static readonly Dictionary<KeyCode, UnityEngine.Events.UnityAction> _inputActionDic = new()
+    {
+        { KeyCode.UpArrow, () => Move(InputType.Up) },
+        { KeyCode.DownArrow, () => Move(InputType.Down) },
+        { KeyCode.LeftArrow, () => Move(InputType.Left) },
+        { KeyCode.RightArrow, () => Move(InputType.Right) }
+    };
 
     /// <summary>
     /// 移动输入集合
@@ -31,7 +35,7 @@ public sealed class BasicPanel : UIPanelBase
     /// <summary>
     /// 任务介绍
     /// </summary>
-    private static Text _missionT;
+    private static UnityEngine.UI.Text _missionT;
 
     /// <summary>
     /// 屏幕宽高
@@ -42,8 +46,17 @@ public sealed class BasicPanel : UIPanelBase
     {
         base.Awake();
 
+        /*for (int i = 0; i != _moveInputList.Count; i++)
+        {
+            int index = i;
+
+            InputType inputType = i.I2E<InputType>();
+
+            CGB(inputType.ToString()).Init(() => Move(inputType), false);
+        }*/
+
         CGB("Escape").Init(Escape);
-        CGX(ref _missionT, "MissionName");
+        CGC(ref _missionT, "MissionName");
 
         GameManager_.MissionTUpdate = MissionTUpdate;
     }
@@ -126,19 +139,11 @@ public sealed class BasicPanel : UIPanelBase
         }
     }
 
-    private static void MoveUp() => Move(InputType.Up);
-
-    private static void MoveDown() => Move(InputType.Down);
-
-    private static void MoveLeft() => Move(InputType.Left);
-
-    private static void MoveRight() => Move(InputType.Right);
-
     private static void Move(InputType inputType) => GameManager_.Leader.InputHandle(inputType);
 
     private static void MissionTUpdate(string value) => _missionT.text = value;
 
-    public override void Active()
+    public override void Active(string[] argumentArray = null)
     {
         base.Active();
 

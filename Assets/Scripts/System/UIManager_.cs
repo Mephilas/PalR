@@ -13,6 +13,11 @@ public sealed class UIManager_ : SingletonBase<UIManager_>
     private static readonly Dictionary<UIPanel, UIPanelBase> _uiPanelDic = new();
 
     /// <summary>
+    /// 旧面板
+    /// </summary>
+    private static UIPanel _lastPanel;
+
+    /// <summary>
     /// 当前UI面板
     /// </summary>
     private static UIPanel _currentUIPanel;
@@ -42,11 +47,17 @@ public sealed class UIManager_ : SingletonBase<UIManager_>
     /// </summary>
     private static bool _axisZero = true;
 
+    /// <summary>
+    /// 上级面板隐藏
+    /// </summary>
+    private static bool _lastHide;
+
     protected override void Awake()
     {
         base.Awake();
 
         GameManager_.Register(GameEventType.UIPanel, PanelSwitch);
+        GameManager_.Register(GameEventType.UIPanelReturn, PanelReturn);
 
         /*EmptyBlack = Resources.Load<Sprite>("EmptyBlack");
         EmptyWhite = Resources.Load<Sprite>("EmptyWhite");*/
@@ -77,6 +88,8 @@ public sealed class UIManager_ : SingletonBase<UIManager_>
     /// </summary>
     private static void InputCheck()
     {
+        if (!_currentPanel.InputSwitch) return;
+
         foreach (KeyCode keyCode in _currentPanel.DownInputDic.Keys)
         {
             if (Input.GetKeyDown(keyCode) && null != _currentPanel.DownInputDic[keyCode])
@@ -128,16 +141,23 @@ public sealed class UIManager_ : SingletonBase<UIManager_>
     /// <summary>
     /// UI面板切换
     /// </summary>
-    /// <param name="uiPanel">面板</param>
-    private static void PanelSwitch(string[] uiPanel)
+    /// <param name="switchArgumentArray">切换参数集合</param>
+    private static void PanelSwitch(string[] switchArgumentArray)
     {
-        bool isHide = true;
-        if (1 != uiPanel.Length) isHide = bool.Parse(uiPanel[1]);
+        _lastPanel = _currentUIPanel;
 
-        ToolsE.Log("Last panel : " + _currentPanel.gameObject.name + "   New panel : " + uiPanel[0]);
-        _currentPanel.Inactive(isHide);
-        (_currentPanel = _uiPanelDic[_currentUIPanel = uiPanel[0].S2E<UIPanel>()]).Active();
+        _lastHide = true;
+        if (1 != switchArgumentArray.Length) _lastHide = bool.Parse(switchArgumentArray[1]);
+
+        ToolsE.Log("Last panel : " + _currentPanel.gameObject.name + "   New panel : " + switchArgumentArray[0]);
+        _currentPanel.Inactive(_lastHide);
+        (_currentPanel = _uiPanelDic[_currentUIPanel = switchArgumentArray[0].S2E<UIPanel>()]).Active(switchArgumentArray);
     }
+
+    /// <summary>
+    /// UI面板返回
+    /// </summary>
+    private static void PanelReturn(string[] nil = null) => PanelSwitch(new string[] { _lastPanel.ToString() });
 
     /// <summary>
     /// 清除所有面板
@@ -201,6 +221,21 @@ public enum UIPanel
     /// 战斗面板
     /// </summary>
     BattlePanel,
+
+    /// <summary>
+    /// 战斗扩展面板
+    /// </summary>
+    BattleExtensionPanel,
+
+    /// <summary>
+    /// 战斗物品面板
+    /// </summary>
+    BattleItemPanel,
+
+    /// <summary>
+    /// 战斗仙术面板
+    /// </summary>
+    BattleSkillPanel,
 
     /// <summary>
     /// Escape面板

@@ -20,7 +20,7 @@ public sealed class SystemPanel : UIPanelBase
     /// <summary>
     /// 选择器集合
     /// </summary>
-    private static Selector[] _selectorArray;
+    private static TextSelector[] _selectorArray;
 
     /// <summary>
     /// 上轮序号
@@ -90,7 +90,7 @@ public sealed class SystemPanel : UIPanelBase
         }
     }
 
-    public override void Active()
+    public override void Active(string[] argumentArray = null)
     {
         base.Active();
 

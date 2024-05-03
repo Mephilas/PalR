@@ -61,6 +61,11 @@ public sealed class DataManager_ : SingletonBase<DataManager_>
     public static MissionData[] MissionDataArray { get; private set; }
 
     /// <summary>
+    /// 战斗背景集合
+    /// </summary>
+    public static Sprite[] BattleGroundArray { get; private set; }
+
+    /// <summary>
     /// 角色数据集合
     /// </summary>
     public static RoleData[] RoleDataArray { get; private set; }
@@ -90,6 +95,11 @@ public sealed class DataManager_ : SingletonBase<DataManager_>
     /// </summary>
     private static GameObject _rolePrefab;
 
+    /// <summary>
+    /// 角色根节点
+    /// </summary>
+    private static Transform _roleParent;
+
     protected override void Awake()
     {
         base.Awake();
@@ -98,9 +108,11 @@ public sealed class DataManager_ : SingletonBase<DataManager_>
         GameManager_.Register(GameEventType.Load, Load);
 
         VideoCGArray = Resources.LoadAll<VideoClip>("CG/Videos");
+
         for (int i = 0; i != 99; i++)
         {
             Sprite[] sequenceArray = Resources.LoadAll<Sprite>("CG/Sequences/" + i);
+
             if (0 != sequenceArray.Length) SequenceCGList.Add(sequenceArray);
             else break;
         }
@@ -111,6 +123,7 @@ public sealed class DataManager_ : SingletonBase<DataManager_>
         TipDataArray = DataLoad<TipData>();
         ChooseDataArray = DataLoad<ChooseData>();
         MissionDataArray = DataLoad<MissionData>();
+        BattleGroundArray = Resources.LoadAll<Sprite>("BattleGround");
         RoleDataArray = DataLoad<RoleData>();
         BGAudioClipArray = Resources.LoadAll<AudioClip>("Audios/BG");
         DataLoad(SoundEffectsDic, "Audios/SoundEffects");
@@ -121,13 +134,17 @@ public sealed class DataManager_ : SingletonBase<DataManager_>
 
         _rolePrefab = Resources.Load<GameObject>("Prefabs/" + nameof(Role));
 
-        Transform roleParent = CGT(nameof(Role));
+        _roleParent = CGT(nameof(Role));
 
-        for (int i = 0; i != Const.MAX_PLAYER_COUNT; i++)
-            RoleCreate<Player>(RoleDataArray[i], roleParent);
-
-        for (int i = Const.MAX_PLAYER_COUNT; i != RoleDataArray.Length; i++)
-            RoleCreate<Role>(RoleDataArray[i], roleParent);
+        for (int i = 0; i != RoleDataArray.Length; i++)
+        {
+            if (0 == RoleDataArray[i].LevelLearnSkillDic.Count)
+            {
+                if (null == RoleDataArray[i].BattleIDGroup) RoleCreate2GM<Role>(RoleDataArray[i]);
+                else RoleCreate2GM<Hostile>(RoleDataArray[i]);
+            }
+            else RoleCreate2GM<Player>(RoleDataArray[i]);
+        }
     }
 
     /// <summary>
@@ -256,12 +273,21 @@ public sealed class DataManager_ : SingletonBase<DataManager_>
     /// 角色创建
     /// </summary>
     /// <param name="id">id</param>
-    private T RoleCreate<T>(RoleData roleData, Transform parent) where T : Role
+    public T RoleCreate<T>(RoleData roleData, Transform parentT) where T : Role
     {
-        GameManager_.RoleList.Add(Instantiate(_rolePrefab, parent).AddComponent<T>());
-        GameManager_.RoleList[roleData.ID].Init(RoleDataArray[roleData.ID]);
+        T tempRole = Instantiate(_rolePrefab, parentT).AddComponent<T>();
+        tempRole.Init(roleData);
 
-        return GameManager_.RoleList[roleData.ID] as T;
+        return tempRole;
+    }
+
+    /// <summary>
+    /// 角色创建
+    /// </summary>
+    /// <param name="id">id</param>
+    private void RoleCreate2GM<T>(RoleData roleData) where T : Role
+    {
+        GameManager_.RoleList.Add(RoleCreate<T>(roleData, _roleParent));
     }
 
     /// <summary>
@@ -311,6 +337,8 @@ public sealed class DataManager_ : SingletonBase<DataManager_>
 
         saveData += MissionManager_.MainMission.ID + Const.SPLIT_0.ToString();
 
+        saveData += GameManager_.BattleGroundID + Const.SPLIT_0.ToString();
+
         saveData += GameManager_.Copper + Const.SPLIT_0.ToString();
 
         saveData += AudioManager_.BGIndex.ToString();
@@ -333,12 +361,14 @@ public sealed class DataManager_ : SingletonBase<DataManager_>
             GameManager_.Trigger(new(GameEventType.Clear, string.Empty));
 
             int index = 0;
+
             LoadApply(GameEventType.RoleState, saveData[index++]);
             LoadApply(GameEventType.GOSwitch, saveData[index++]);
             LoadApply(GameEventType.Load2Player, saveData[index++]);
             LoadApply(GameEventType.ItemAdd, saveData[index++]);
             LoadApply(GameEventType.LeaderChange, saveData[index++]);
             LoadApply(GameEventType.MissionBegin, saveData[index++]);
+            LoadApply(GameEventType.LocationChange, saveData[index++]);
             LoadApply(GameEventType.CopperAdd, saveData[index++]);
             LoadApply(GameEventType.BGPlay, saveData[index++]);
 
@@ -346,10 +376,9 @@ public sealed class DataManager_ : SingletonBase<DataManager_>
             static void LoadApply(GameEventType gameEventType, string saveData)
             {
                 string[] tempSA = saveData.Split(Const.SPLIT_1);
+
                 for (int i = 0; i != tempSA.Length; i++)
-                {
                     GameManager_.Trigger(new(gameEventType, tempSA[i].Split(Const.SPLIT_2)));
-                }
             }
         }
         else GameManager_.NewGame();

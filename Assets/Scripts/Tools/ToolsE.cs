@@ -1,7 +1,7 @@
 using System;
 using System.IO;
-using UnityEngine;
 using System.Collections.Generic;
+using UnityEngine;
 
 /// <summary>
 /// 工具类
@@ -15,7 +15,7 @@ public static class ToolsE
     /// <param name="source">原名</param>
     /// <param name="hundred">百位</param>
     //[UnityEditor.MenuItem("Tools/FileRename")]
-    public static void FileRename(string path, string source, string extension = ".bmp", bool hundred = true)
+    /*public static void FileRename(string path, string source, string extension = ".bmp", bool hundred = true)
     {
         //ToolsE.FileRename("/Resources/Item/", "1");
 
@@ -38,9 +38,9 @@ public static class ToolsE
             }
             else return;
         }
-    }
+    }*/
 
-    /*rivate ref int SSS { get { return ref _sss; } }
+    /*private ref int SSS { get { return ref _sss; } }
 
     private int _sss;
 
@@ -77,14 +77,14 @@ public static class ToolsE
     public static void LogWarning(string[] logArray)
     {
 #if UNITY_EDITOR
-        Debug.LogWarning(SA2S(logArray));
+        LogWarning(SA2S(logArray));
 #endif
     }
 
     public static void LogWarning(int[] logArray)
     {
 #if UNITY_EDITOR
-        Debug.LogWarning(IA2S(logArray));
+        LogWarning(IA2S(logArray));
 #endif
     }
 
@@ -119,18 +119,13 @@ public static class ToolsE
     private static int _bugCount;
 
     /// <summary>
-    /// 屏幕输出
-    /// </summary>
-    /// <param name="text"></param>
-    public static void ScreenPrint(string text) => Root_.Instance.CGC<UnityEngine.UI.Text>("Canvas_/Debug").text += text + Const.SPLIT_RN;
-
-    /// <summary>
     /// 实机Debug
     /// </summary>
     /// <param name="text">Text</param>
     public static void RuntimeDebug(string text)
     {
-        ScreenPrint(text);
+        Root_.ScreenLog(text);
+
         File.WriteAllText(Application.persistentDataPath + "/Bug_" + _bugCount++ + ".txt", text);
     }
 
@@ -170,14 +165,14 @@ public static class ToolsE
     /// </summary>
     /// <param name="data">数据</param>
     /// <returns>整形</returns>
-    public static int[] S2IA(string data, char split = Const.SPLIT_1) => SA2IA(data.Split(split));
+    public static int[] S2IA(this string data, char split = Const.SPLIT_1) => SA2IA(data.Split(split));
 
     /// <summary>
     /// 字符转整形
     /// </summary>
     /// <param name="data">数据</param>
     /// <returns>整形</returns>
-    public static int[] SA2IA(string[] data)
+    public static int[] SA2IA(this string[] data)
     {
         int[] tempIA = new int[data.Length];
 
@@ -229,7 +224,7 @@ public static class ToolsE
     /// </summary>
     /// <param name="data">数据</param>
     /// <returns>浮点</returns>
-    public static float[] S2F(string[] data)
+    public static float[] S2F(this string[] data)
     {
         float[] tempIA = new float[data.Length];
 
@@ -287,14 +282,21 @@ public static class ToolsE
     /// </summary>
     /// <param name="data">数据</param>
     /// <returns>向量</returns>
-    public static Vector3 SA2V(string[] data) => new(float.Parse(data[1]), float.Parse(data[2]), float.Parse(data[3]));
+    public static Vector2 SA2V2(this string[] data) => new(float.Parse(data[1]), float.Parse(data[2]));
+
+    /// <summary>
+    /// 字符数组转向量
+    /// </summary>
+    /// <param name="data">数据</param>
+    /// <returns>向量</returns>
+    public static Vector3 SA2V3(this string[] data) => new(float.Parse(data[1]), float.Parse(data[2]), float.Parse(data[3]));
 
     /// <summary>
     /// 字符数组整合
     /// </summary>
     /// <param name="data">数据</param>
     /// <returns>字符</returns>
-    public static string SA2S(string[] data, char split = Const.SPLIT_3)
+    public static string SA2S(this string[] data, char split = Const.SPLIT_3)
     {
         string tempS = string.Empty;
 
@@ -309,7 +311,7 @@ public static class ToolsE
     /// <param name="data">数据</param>
     /// <param name="length">长度</param>
     /// <returns>数据</returns>
-    public static string[] SACut(string[] data, int length)
+    public static string[] SACut(this string[] data, int length)
     {
         string[] tempSA = new string[length];
 
@@ -327,14 +329,14 @@ public static class ToolsE
     /// <param name="data">数据</param>
     /// <param name="length">长度</param>
     /// <returns>数据</returns>
-    public static string SACut2S(string[] data, int length) => SA2S(SACut(data, length));
+    public static string SACut2S(this string[] data, int length) => SA2S(SACut(data, length));
 
     /// <summary>
     /// 整形数组整合
     /// </summary>
     /// <param name="data">数据</param>
     /// <returns>字符集合</returns>
-    public static string[] IA2SA(int[] data)
+    public static string[] IA2SA(this int[] data)
     {
         string[] tempSA = new string[data.Length];
 
@@ -352,7 +354,7 @@ public static class ToolsE
     /// <param name="data">数据</param>
     /// <param name="split">拼接符</param>
     /// <returns>字符集合</returns>
-    public static string IA2S(int[] data, char split = Const.SPLIT_1) => SA2S(IA2SA(data), split);
+    public static string IA2S(this int[] data, char split = Const.SPLIT_1) => SA2S(IA2SA(data), split);
 
     /// <summary>
     /// 数字转枚举
@@ -487,24 +489,33 @@ public static class ToolsE
     /// <summary>
     /// 末尾
     /// </summary>
-    /// <param name="array"></param>
-    /// <returns>末位</returns>
     public static int Last(this Array array) => array.Length - 1;
 
     /// <summary>
     /// 末尾
     /// </summary>
-    /// <param name="list"></param>
-    /// <returns></returns>
     public static int Last<T>(this List<T> list) => list.Count - 1;
 
     /// <summary>
     /// 末尾
     /// </summary>
-    /// <param name="dic"></param>
-    /// <returns></returns>
     public static int Last<T0, T1>(this Dictionary<T0, T1> dic) => dic.Count - 1;
 
+    /// <summary>
+    /// 有效验证
+    /// </summary>
+    public static bool Valid(this Array array, int index) => 0 <= index && index < array.Length;
+
+    /// <summary>
+    /// 有效验证
+    /// </summary>
+    public static bool Valid<T>(this List<T> list, int index) => 0 <= index && index < list.Count;
+
+    /// <summary>
+    /// Z轴修正，不明原因的所有素材需要垂直拉伸1.2倍，猜测发售前临时修改
+    /// </summary>
+    /// <param name="origin"></param>
+    /// <returns></returns>
     public static Vector3 ZFixed(this Vector3 origin)
     {
         origin.z *= 1.2f;
@@ -517,7 +528,7 @@ public static class ToolsE
     /// </summary>
     /// <param name="origin">源</param>
     /// <returns>向量</returns>
-    public static Vector3 Planarizaty(this Vector3 origin)
+    public static Vector3 Planarization(this Vector3 origin)
     {
         origin.y = 0;
 

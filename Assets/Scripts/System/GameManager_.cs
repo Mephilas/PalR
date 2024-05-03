@@ -25,14 +25,16 @@ public sealed class GameManager_ : SingletonBase<GameManager_>
         { GameEventType.PlayerJoin, PlayerJoin },
         { GameEventType.PlayerLeave, PlayerLeave },
         { GameEventType.LeaderChange, LeaderChange },
-        { GameEventType.RoleFollow, (string[] data) => RoleList[int.Parse(data[0])].FollowSwitch = bool.Parse(data[1]) },
+        { GameEventType.RoleFollow, (string[] data) => RoleList[int.Parse(data[0])].RoleFollow(data) },
         { GameEventType.HPAdd, (string[] data) => RoleList[int.Parse(data[0])].Trigger(RoleEffectType.HPAdd, int.Parse(data[1])) },
         { GameEventType.ItemUse, (string[] data) => RoleList[int.Parse(data[0])].ItemUse(data) },
         { GameEventType.ItemEquip, (string[] data) => RoleList[int.Parse(data[0])].ItemEquip(data) },
         { GameEventType.SkillLearn, (string[] data) => RoleList[int.Parse(data[0])].Trigger(RoleEffectType.SkillLearn, int.Parse(data[1])) },
         { GameEventType.SkillCast, (string[] data) => RoleList[int.Parse(data[0])].SkillCast(data) },
+        { GameEventType.LocationChange, (string[] data) => LocationChange(int.Parse(data[0])) },
         { GameEventType.CopperAdd, (string[] data) => CopperAdd(int.Parse(data[0])) },
         { GameEventType.ItemAdd, ItemAdd },
+        { GameEventType.Anim, (string[] data) => RoleList[int.Parse(data[0])].Anim(data) },
         { GameEventType.SpecialAnim, (string[] data) => RoleList[int.Parse(data[0])].SpecialAnim(data) },
         { GameEventType.RoleState, (string[] data) => RoleList[int.Parse(data[0])].RoleState(data) },
         { GameEventType.RoleTransfer, (string[] data) => RoleList[int.Parse(data[0])].RoleTransfer(data) },
@@ -78,6 +80,11 @@ public sealed class GameManager_ : SingletonBase<GameManager_>
     public static Role Leader { get { return RoleList[_leaderID]; } }
 
     /// <summary>
+    /// 战场ID
+    /// </summary>
+    public static int BattleGroundID { get; private set; }
+
+    /// <summary>
     /// 金钱
     /// </summary>
     public static int Copper { get; private set; }
@@ -114,7 +121,7 @@ public sealed class GameManager_ : SingletonBase<GameManager_>
         /*Bag.Add(0, 88);
         Bag.Add(61, 2);
         Bag.Add(62, 2);*/
-        for (int i = 0; i != DataManager_.ItemDataArray.Length; i++) Bag.Add(i, i);
+        for (int i = 0; i != DataManager_.ItemDataArray.Length; i++) Bag.Add(i, i + 1);
 
         if (1 == PlayerPrefs.GetInt(nameof(NewGame), 1))
         {
@@ -175,9 +182,11 @@ public sealed class GameManager_ : SingletonBase<GameManager_>
 
         for (int i = 0; i != PlayerList.Count; i++)
         {
-            PlayerList[i].FollowSwitch = _leaderID != PlayerList[i].RoleData.ID;
+            Trigger(new GameEventData(GameEventType.RoleFollow, new string[] { PlayerList[i].RoleData.ID.ToString(), (_leaderID != PlayerList[i].RoleData.ID).ToString() }));
         }
     }
+
+    public static void LocationChange(int locationID) => BattleGroundID = locationID;
 
     public static bool CopperAdd(int count)
     {
@@ -200,7 +209,7 @@ public sealed class GameManager_ : SingletonBase<GameManager_>
     {
         int itemID = int.Parse(data[0]), itemCount = 1 == data.Length ? 1 : int.Parse(data[1]);
         //ToolsE.LogWarning("Add : " + DataManager_.ItemDataArray[itemID].Name + " " + itemCount);
-        Debug.Assert(0 != itemCount);
+        ToolsE.Assert(0 != itemCount, "");
         if (0 < itemCount)
         {
             if (Bag.ContainsKey(itemID))
@@ -249,7 +258,8 @@ public sealed class GameManager_ : SingletonBase<GameManager_>
     /// <param name="argumentArray">参数集合</param>
     public static void Trigger(GameEventData gameEvent)
     {
-        ToolsE.Log(gameEvent.GameEventType + " || " + ToolsE.SA2S(gameEvent.ArgumentArray));
+        ToolsE.Log(gameEvent.GameEventType);
+        if (null != gameEvent.ArgumentArray) ToolsE.Log(gameEvent.ArgumentArray.SA2S());
 
         _geHandlerDic[gameEvent.GameEventType](gameEvent.ArgumentArray);
     }
@@ -286,7 +296,7 @@ public sealed class GameEventData
     /// </summary>
     /// <param name="gameEventType">类型</param>
     /// <param name="argumentArray">参数集合</param>
-    public GameEventData(GameEventType gameEventType, string[] argumentArray)
+    public GameEventData(GameEventType gameEventType, string[] argumentArray = null)
     {
         GameEventType = gameEventType;
         ArgumentArray = argumentArray;
@@ -299,11 +309,13 @@ public sealed class GameEventData
     /// <param name="argument">参数</param>
     public GameEventData(GameEventType gameEventType, string argument)
     {
+        //new GameEventData(gameEventType, new string[] { argument });
+
         GameEventType = gameEventType;
         ArgumentArray = new string[] { argument };
     }
 
-    public override string ToString() => GameEventType + " : " + ToolsE.SA2S(ArgumentArray);
+    public override string ToString() => GameEventType + " : " + ArgumentArray.SA2S();
 }
 
 
@@ -388,6 +400,11 @@ public enum GameEventType
     UIPanel,
 
     /// <summary>
+    /// UI面板返回
+    /// </summary>
+    UIPanelReturn,
+
+    /// <summary>
     /// 幕布切换
     /// </summary>
     Curtain,
@@ -401,6 +418,11 @@ public enum GameEventType
     /// 提示
     /// </summary>
     Tip,
+
+    /// <summary>
+    /// 动画
+    /// </summary>
+    Anim,
 
     /// <summary>
     /// 特殊动画
@@ -481,6 +503,11 @@ public enum GameEventType
     /// 仙术施放
     /// </summary>
     SkillCast,
+
+    /// <summary>
+    /// 位置修改，战斗
+    /// </summary>
+    LocationChange,
 
     /// <summary>
     /// 金钱增加

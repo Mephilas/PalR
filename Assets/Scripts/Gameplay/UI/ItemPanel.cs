@@ -14,7 +14,7 @@ public sealed class ItemPanel : UIPanelBase
     /// <summary>
     /// 翻页行号
     /// </summary>
-    private const int TURN_LINE = HORIZONTAL_COUINT / 2;
+    private const int TURN_LINE = (int)(HORIZONTAL_COUINT * 0.5f);
 
     /// <summary>
     /// 自适应最大列数
@@ -34,7 +34,7 @@ public sealed class ItemPanel : UIPanelBase
     /// <summary>
     /// 选择器集合
     /// </summary>
-    private static Selector[] _selectorArray;
+    private static TextSelector[] _selectorArray;
 
     /// <summary>
     /// 物品矩阵
@@ -59,7 +59,7 @@ public sealed class ItemPanel : UIPanelBase
     /// <summary>
     /// 当前行号
     /// </summary>
-    private static int _currentLineIndex { get { return _currentIndex / _verticalCount; } }
+    private static int CurrentLineIndex { get { return _currentIndex / _verticalCount; } }
 
     /// <summary>
     /// 当前首行行号
@@ -69,7 +69,7 @@ public sealed class ItemPanel : UIPanelBase
     /// <summary>
     /// 当前尾行行号
     /// </summary>
-    private static int _bottomLineIndex { get { return _topLineIndex + HORIZONTAL_COUINT - 1; } }
+    private static int BottomLineIndex { get { return _topLineIndex + HORIZONTAL_COUINT - 1; } }
 
     /// <summary>
     /// 翻页行数
@@ -138,31 +138,31 @@ public sealed class ItemPanel : UIPanelBase
         _itemI.sprite = SelectItem.Icon;
         _description.text = SelectItem.Description;
 
-        if (TURN_LINE <= ((float)GameManager_.Bag.Count / _verticalCount).Ceil() - 1 - _currentLineIndex && TURN_LINE < _currentLineIndex - _topLineIndex)
+        if (TURN_LINE <= ((float)GameManager_.Bag.Count / _verticalCount).Ceil() - 1 - CurrentLineIndex && TURN_LINE < CurrentLineIndex - _topLineIndex)
         {
-            if (GameManager_.Bag.Count / _verticalCount - _currentLineIndex < TURN_LINE)
+            if (GameManager_.Bag.Count / _verticalCount - CurrentLineIndex < TURN_LINE)
             {
-                _turnCount = GameManager_.Bag.Count / _verticalCount - _currentLineIndex;
+                _turnCount = GameManager_.Bag.Count / _verticalCount - CurrentLineIndex;
             }
-            else _turnCount = _currentLineIndex - _topLineIndex - TURN_LINE;
+            else _turnCount = CurrentLineIndex - _topLineIndex - TURN_LINE;
 
             _itemGridT.localPosition = _itemGridT.localPosition.V3ModifyYAdd(_verticalHeight * _turnCount);
             _topLineIndex += _turnCount;
         }
-        else if (TURN_LINE <= _currentLineIndex && TURN_LINE < _bottomLineIndex - _currentLineIndex)
+        else if (TURN_LINE <= CurrentLineIndex && TURN_LINE < BottomLineIndex - CurrentLineIndex)
         {
-            if (_currentLineIndex < TURN_LINE)
+            if (CurrentLineIndex < TURN_LINE)
             {
-                _turnCount = _currentLineIndex;
+                _turnCount = CurrentLineIndex;
             }
-            else _turnCount = -(_bottomLineIndex - _currentLineIndex - TURN_LINE);
+            else _turnCount = -(BottomLineIndex - CurrentLineIndex - TURN_LINE);
 
             _itemGridT.localPosition = _itemGridT.localPosition.V3ModifyYAdd(_verticalHeight * _turnCount);
             _topLineIndex += _turnCount;
         }
     }
 
-    public override void Active()
+    public override void Active(string[] argumentArray = null)
     {
         base.Active();
 
@@ -187,15 +187,19 @@ public sealed class ItemPanel : UIPanelBase
                 ItemData item = DataManager_.ItemDataArray[itemID];
                 _selectorArray[index].Init(() => Select(_currentIndex = index), () =>
                 {
-                    if (SelectItem.StoryItem)
+                    if (-1 == SelectItem.SellPrice)
                     {
-                        if (0 != SelectItem.EventDic.Count)
+                        if (0 == SelectItem.EventList.Count)
+                        {
+                            GameManager_.Trigger(new(GameEventType.Tip, "46"));
+                        }
+                        else
                         {
                             UIManager_.PanelClear();
                             GameManager_.Trigger(new(GameEventType.ItemUse, new string[] { GameManager_.PlayerList[0].RoleData.ID.ToString(), SelectItem.ID.ToString() }));
                         }
                     }
-                    else GameManager_.Trigger(new(GameEventType.UIPanel, new string[] { (SelectItem.OutfitOrConsumable ? UIPanel.EquipPanel : UIPanel.UsePanel).ToString(), "False" }));
+                    else GameManager_.Trigger(new(GameEventType.UIPanel, new string[] { (SelectItem.Outfit ? UIPanel.EquipPanel : UIPanel.UsePanel).ToString(), "False" }));
                 }, item.Name, item.ID, index, GameManager_.Bag[itemID]);
             }
 

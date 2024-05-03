@@ -35,12 +35,24 @@ public abstract class UIBase_ : MonoBehaviourBase
     /// <summary>
     /// 隐藏
     /// </summary>
-    public virtual void Hide() => RectT.anchoredPosition = Const.HIDDEN_P;
+    public override void Hide() => RectT.anchoredPosition = Const.HIDDEN_P;
 
     /// <summary>
     /// 显示
     /// </summary>
     public virtual void Display() => RectT.anchoredPosition = _defaultAnchoredP;
+
+    /// <summary>
+    /// UI隐藏
+    /// </summary>
+    /// <param name="rectT">目标</param>
+    public void UIHide(RectTransform rectT) => rectT.anchoredPosition = Const.HIDDEN_P;
+
+    /// <summary>
+    /// UI显示
+    /// </summary>
+    /// <param name="rectT"></param>
+    public void UIDisplay(RectTransform rectT) => rectT.anchoredPosition = Vector2.zero;
 
     /// <summary>
     /// 子物体获取
@@ -52,37 +64,11 @@ public abstract class UIBase_ : MonoBehaviourBase
     protected RectTransform CGRT(string path) => CGC<RectTransform>(path);
 
     /// <summary>
-    /// 子物体获取
-    /// </summary>
-    /// <param name="path">路径</param>
-    /// <returns>子物体</returns>
-    protected void CGRT(ref RectTransform rectTransform, string path) => rectTransform = CGRT(path);
-
-    /// <summary>
-    /// Image获取
-    /// </summary>
-    /// <returns>Image</returns>
-    public Image GCI() => GC<Image>();
-
-    /// <summary>
     /// 子物体Image获取
     /// </summary>
     /// <param name="path">路径</param>
     /// <returns>Image</returns>
     public Image CGI(string path) => CGC<Image>(path);
-
-    /// <summary>
-    /// 子物体Image获取
-    /// </summary>
-    /// <param name="image">Image</param>
-    /// <param name="path">路径</param>
-    public void CGI(ref Image image, string path) => image = CGI(path);
-
-    /// <summary>
-    /// Text获取
-    /// </summary>
-    /// <returns>Text</returns>
-    public Text GCX() => GC<Text>();
 
     /// <summary>
     /// 子物体Text获取
@@ -92,29 +78,9 @@ public abstract class UIBase_ : MonoBehaviourBase
     public Text CGX(string path) => CGC<Text>(path);
 
     /// <summary>
-    /// 子物体Text获取
-    /// </summary>
-    /// <param name="text">Text</param>
-    /// <param name="path">路径</param>
-    public void CGX(ref Text text, string path) => text = CGX(path);
-
-    /// <summary>
-    /// Button获取
-    /// </summary>
-    /// <returns>Button</returns>
-    public ButtonE GCB() => GC<ButtonE>();
-
-    /// <summary>
     /// 子物体Button获取
     /// </summary>
     /// <param name="path">路径</param>
     /// <returns>Button</returns>
     public ButtonE CGB(string path) => CGC<ButtonE>(path);
-
-    /// <summary>
-    /// 子物体Button获取
-    /// </summary>
-    /// <param name="button">Button</param>
-    /// <param name="path">路径</param>
-    public void CGB(ref ButtonE button, string path) => button = CGB(path);
 }

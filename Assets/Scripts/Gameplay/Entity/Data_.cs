@@ -1,32 +1,33 @@
 using System;
 using System.Collections.Generic;
+using UnityEditor.UIElements;
 using UnityEngine;
 
 /// <summary>
-/// Êı¾İ»ùÀà
+/// æ•°æ®åŸºç±»
 /// </summary>
 public abstract class DataBase
 {
     /// <summary>
-    /// Êı×ÖID
+    /// æ•°å­—ID
     /// </summary>
     public readonly int ID;
 
     /// <summary>
-    /// È«³¤ID
+    /// å…¨é•¿ID
     /// </summary>
     public string FullID { get; private set; }
 
     /// <summary>
-    /// ¹¹Ôì
+    /// æ„é€ 
     /// </summary>
-    /// <param name="data">Êı¾İ</param>
+    /// <param name="data">æ•°æ®</param>
     public DataBase(string[] data) => FullID = (ID = int.Parse(data[0])).ToString();
 
     /// <summary>
-    /// È«³¤ID²¹Æë
+    /// å…¨é•¿IDè¡¥é½
     /// </summary>
-    /// <param name="times">±¶ÂÊ</param>
+    /// <param name="times">å€ç‡</param>
     protected void FullIDCompletion(FullIDTimes times)
     {
         if (ID < (int)times)
@@ -40,7 +41,7 @@ public abstract class DataBase
     }
 
     /// <summary>
-    /// È«³¤ID²¹Æë±¶Êı
+    /// å…¨é•¿IDè¡¥é½å€æ•°
     /// </summary>
     protected enum FullIDTimes
     {
@@ -53,52 +54,52 @@ public abstract class DataBase
 
 
 /// <summary>
-/// ÈÎÎñÊı¾İ
+/// ä»»åŠ¡æ•°æ®
 /// </summary>
 public sealed class MissionData : DataBase
 {
     //Property
     #region
     /// <summary>
-    /// ÊÇ·ñÖ÷Ïß
+    /// æ˜¯å¦ä¸»çº¿
     /// </summary>
     public readonly bool IsMain;
 
     /// <summary>
-    /// Ãû³Æ ³ıÑı
+    /// åç§° é™¤å¦–
     /// </summary>
     public readonly string Name;
 
     /// <summary>
-    /// ËµÃ÷ »÷°ÜÂŞÉ·¹íÆÅ
+    /// è¯´æ˜ å‡»è´¥ç½—ç…é¬¼å©†
     /// </summary>
     public readonly string Description;
 
     /// <summary>
-    /// ÈÎÎñÀàĞÍ
+    /// ä»»åŠ¡ç±»å‹
     /// </summary>
     public readonly MissionType Type;
 
     /// <summary>
-    /// ĞèÇó¼¯ºÏ
+    /// éœ€æ±‚é›†åˆ
     /// </summary>
     public readonly string[] RequireArray;
 
     /// <summary>
-    /// ÊÂ¼ş¼¯ºÏ
+    /// äº‹ä»¶é›†åˆ
     /// </summary>
     public readonly GameEventData[] EventArray;
 
     /// <summary>
-    /// ÈÎÎñ×´Ì¬
+    /// ä»»åŠ¡çŠ¶æ€
     /// </summary>
     public MissionState State { get; set; }
     #endregion
 
     /// <summary>
-    /// ¹¹Ôì
+    /// æ„é€ 
     /// </summary>
-    /// <param name="data">Êı¾İ</param>
+    /// <param name="data">æ•°æ®</param>
     public MissionData(string[] data) : base(data)
     {
         int index = 1;
@@ -123,245 +124,265 @@ public sealed class MissionData : DataBase
 
 
 /// <summary>
-/// ÈÎÎñÀàĞÍ
+/// ä»»åŠ¡ç±»å‹
 /// </summary>
 public enum MissionType
 {
     /// <summary>
-    /// Ì¨´Ê
+    /// å°è¯
     /// </summary>
     Dialogue,
 
     /// <summary>
-    /// ÎïÆ·
+    /// ç‰©å“
     /// </summary>
     Item,
 
     /// <summary>
-    /// ¹ÖÎï
+    /// æ€ªç‰©
     /// </summary>
     Monster,
 }
 
 
 /// <summary>
-/// ÈÎÎñ×´Ì¬
+/// ä»»åŠ¡çŠ¶æ€
 /// </summary>
 public enum MissionState
 {
     /// <summary>
-    /// Î´¼¤»î
+    /// æœªæ¿€æ´»
     /// </summary>
     Inactive,
 
     /// <summary>
-    /// ¼¤»î
+    /// æ¿€æ´»
     /// </summary>
     Active,
 
     /// <summary>
-    /// ½øĞĞÖĞ
+    /// è¿›è¡Œä¸­
     /// </summary>
     InProgress,
 
     /// <summary>
-    /// Íê³É
+    /// å®Œæˆ
     /// </summary>
     Complete,
 
     /// <summary>
-    /// ½áÊø
+    /// ç»“æŸ
     /// </summary>
     Finish
 }
 
 
 /// <summary>
-/// ½ÇÉ«Êı¾İ
+/// è§’è‰²æ•°æ®
 /// </summary>
 public sealed class RoleData : DataBase
 {
     //Property
     #region
     /// <summary>
-    /// ×î´ó¾­ÑéÖµ
+    /// æœ€å¤§ç»éªŒå€¼
     /// </summary>
     private const int MAX_EXPERIENCE = 32000;
 
     /// <summary>
-    /// ¾­ÑéĞèÇó¼¯ºÏ
+    /// ç»éªŒéœ€æ±‚é›†åˆ
     /// </summary>
     public static readonly int[] EXPERIENCE_REQUIRE_ARRAY = new int[Role.MAX_LEVEL];
 
-    //·ÖÀë³ÉÕ½·¨Ì¹Ö°Òµºó·Ö±ğ·ÅÈëÖ°ÒµÊı¾İ±í¸ñÖĞ¶ÁÈ¡
+    //åˆ†ç¦»æˆæˆ˜æ³•å¦èŒä¸šååˆ†åˆ«æ”¾å…¥èŒä¸šæ•°æ®è¡¨æ ¼ä¸­è¯»å–
 
     /// <summary>
-    /// ÌåÁ¦³É³¤
+    /// ä½“åŠ›æˆé•¿
     /// </summary>
     public const int HP_GROW_MIN = 10,
                      HP_GROW_MAX = 17;
 
     /// <summary>
-    /// ÕæÆø³É³¤
+    /// çœŸæ°”æˆé•¿
     /// </summary>
     public const int MP_GROW_MIN = 8,
                      MP_GROW_MAX = 13;
 
     /// <summary>
-    /// ÎäÊõ³É³¤
+    /// æ­¦æœ¯æˆé•¿
     /// </summary>
     public const int ATTACK_GROW_MIN = 4,
                      ATTACK_GROW_MAX = 5;
 
     /// <summary>
-    /// ÁéÁ¦³É³¤
+    /// çµåŠ›æˆé•¿
     /// </summary>
     public const int MAGIC_GROW_MIN = 4,
                      MAGIC_GROW_MAX = 5;
 
     /// <summary>
-    /// ·ÀÓù³É³¤
+    /// é˜²å¾¡æˆé•¿
     /// </summary>
     public const int DEFENSE_GROW_MIN = 2,
                      DEFENSE_GROW_MAX = 3;
 
     /// <summary>
-    /// Éí·¨³É³¤
+    /// èº«æ³•æˆé•¿
     /// </summary>
     public const int SPEED_GROW_MIN = 2,
                      SPEED_GROW_MAX = 3;
 
     /// <summary>
-    /// ¼ªÔË³É³¤
+    /// å‰è¿æˆé•¿
     /// </summary>
     public const int LUCK_GROW_MIN = 2,
                      LUCK_GROW_MAX = 2;
 
     /// <summary>
-    /// ¶¯»­¼¯ºÏ
+    /// åŠ¨ç”»é›†åˆ
     /// </summary>
     private readonly List<Dictionary<InputType, Sprite[]>> AnimList = new();
 
     /// <summary>
-    /// µ±Ç°¶¯»­¼¯ºÏ
+    /// å½“å‰åŠ¨ç”»é›†åˆ
     /// </summary>
     public Dictionary<InputType, Sprite[]> CurrentAnimDic { get { return AnimList[SkinIndex]; } }
 
     /// <summary>
-    /// ÌØÊâ¶¯»­¼¯ºÏ
+    /// ç‰¹æ®ŠåŠ¨ç”»é›†åˆ
     /// </summary>
     public readonly Dictionary<SpecialAnimType, Sprite[]> SpecialAnimDic = new();
 
     /// <summary>
-    /// Í·Ïñ¼¯ºÏ
+    /// æˆ˜æ–—åŠ¨ç”»é›†åˆ
+    /// </summary>
+    private readonly List<Dictionary<BattleAnimType, Sprite[]>> BattleAnimList = new();
+
+    /// <summary>
+    /// å½“å‰æˆ˜æ–—åŠ¨ç”»é›†åˆ
+    /// </summary>
+    public Dictionary<BattleAnimType, Sprite[]> CurrentBattleAnimDic { get { return BattleAnimList[SkinIndex]; } }
+
+    /// <summary>
+    /// å¤´åƒé›†åˆ
     /// </summary>
     public readonly Dictionary<ExpressionType, Sprite> ProfilePictureDic = new();
 
     /// <summary>
-    /// ×´Ì¬ÊÂ¼ş¼¯ºÏ
+    /// çŠ¶æ€äº‹ä»¶é›†åˆ
     /// </summary>
     public readonly GameEventData[][] StateEventArray;
 
     /// <summary>
-    /// Ãû×Ö
+    /// åå­—
     /// </summary>
     public string Name { get { return string.IsNullOrEmpty(Pseudonym) ? _name : Pseudonym; } }
 
     /// <summary>
-    /// Ãû×Ö
+    /// åå­—
     /// </summary>
     private readonly string _name;
 
     /// <summary>
-    /// ¼ÙÃû
+    /// å‡å
     /// </summary>
     public string Pseudonym { get; set; }
 
     /// <summary>
-    /// Æ¤·ôĞòºÅ
+    /// çš®è‚¤åºå·
     /// </summary>
     public int SkinIndex { get; set; }
 
     /// <summary>
-    /// Ì¨´ÊĞòºÅ
+    /// å°è¯åºå·
     /// </summary>
     public int DialogueIndex { get; set; } = -1;
 
     /// <summary>
-    /// µÈ¼¶Ñ§Ï°¼¼ÄÜ¼¯ºÏ
+    /// ç­‰çº§å­¦ä¹ æŠ€èƒ½é›†åˆ
     /// </summary>
-    public readonly Dictionary<int, int> LevelSkillDic = new();
+    public readonly Dictionary<int, int> LevelLearnSkillDic = new();
 
     /// <summary>
-    /// »ù´¡ÌåÁ¦
+    /// åŸºç¡€ä½“åŠ›
     /// </summary>
     public readonly int HPBase;
 
     /// <summary>
-    /// »ù´¡ÕæÆø
+    /// åŸºç¡€çœŸæ°”
     /// </summary>
     public readonly int MPBase;
 
     /// <summary>
-    /// »ù´¡ÎäÊõ
+    /// åŸºç¡€æ­¦æœ¯
     /// </summary>
     public readonly int AttackBase;
 
     /// <summary>
-    /// »ù´¡ÁéÁ¦
+    /// åŸºç¡€çµåŠ›
     /// </summary>
     public readonly int MagicBase;
 
     /// <summary>
-    /// »ù´¡·ÀÓù
+    /// åŸºç¡€é˜²å¾¡
     /// </summary>
     public readonly int DefenseBase;
 
     /// <summary>
-    /// »ù´¡Éí·¨
+    /// åŸºç¡€èº«æ³•
     /// </summary>
     public readonly int SpeedBase;
 
     /// <summary>
-    /// »ù´¡¼ªÔË
+    /// åŸºç¡€å‰è¿
     /// </summary>
     public readonly int LuckBase;
 
     /// <summary>
-    /// Õ½¶·½ÇÉ«ID¼¯ºÏ
+    /// æˆ˜æ–—éŸ³ä¹
+    /// </summary>
+    public readonly string BattleBG;
+
+    /// <summary>
+    /// æˆ˜æ–—è§’è‰²IDé›†åˆ
     /// </summary>
     public readonly int[] BattleIDGroup;
 
     /// <summary>
-    /// Ä¬ÈÏ×°±¸
+    /// é»˜è®¤è£…å¤‡
     /// </summary>
     public readonly int[] DefaultOutfit;
 
     /// <summary>
-    /// Ä¬ÈÏÏÉÊõ
+    /// é»˜è®¤ä»™æœ¯
     /// </summary>
     public readonly int[] DefaultSkill;
 
     /// <summary>
-    /// ³öÊÛÎïÆ·
+    /// åˆå‡»ä»™æœ¯
     /// </summary>
-    public readonly int[] SellItem;  //²ğ·ÖÎªµ¥ÈË¶àÉÌµê²¢´øÓĞ¹ºÂòÌõ¼ş
+    public readonly int JointSkillID;
 
     /// <summary>
-    /// ·ÉÁúÌ½ÔÆÊÖµôÂä
+    /// å‡ºå”®ç‰©å“
+    /// </summary>
+    public readonly int[] SellItem;  //æ‹†åˆ†ä¸ºå•äººå¤šå•†åº—å¹¶å¸¦æœ‰è´­ä¹°æ¡ä»¶
+
+    /// <summary>
+    /// é£é¾™æ¢äº‘æ‰‹æ‰è½
     /// </summary>
     public readonly int[] StealItem;
 
     /// <summary>
-    /// »÷°ÜµôÂä
+    /// å‡»è´¥æ‰è½
     /// </summary>
     public readonly int[] DefeatItem;
     #endregion
 
     /// <summary>
-    /// ¹¹Ôì
+    /// æ„é€ 
     /// </summary>
-    /// <param name="data">Êı¾İ</param>
+    /// <param name="data">æ•°æ®</param>
     public RoleData(string[] data) : base(data)
     {
         FullIDCompletion(FullIDTimes.Hundreds);
@@ -371,16 +392,28 @@ public sealed class RoleData : DataBase
             if (null != Application.dataPath + "/Resources/Role/" + FullID + "/Skin" + i + "/" + InputType.Up + "/0.bmp")
             {
                 Dictionary<InputType, Sprite[]> tempAnimDic = new();
-
                 foreach (InputType keyCode in Role.MOVE_INPUT_DIC.Keys)
-                    tempAnimDic.Add(keyCode, Resources.LoadAll<Sprite>("Role/" + FullID + "/Skin" + i.ToString() + "/" + keyCode));
+                    tempAnimDic.Add(keyCode, Resources.LoadAll<Sprite>("Role/" + FullID + "/Skin" + i + "/" + keyCode));
 
                 AnimList.Add(tempAnimDic);
+
+                Dictionary<BattleAnimType, Sprite[]> tempBattleAnimDic = new();
+                Array battleAnimArray = Enum.GetValues(typeof(BattleAnimType));
+                foreach (BattleAnimType battleAnimType in battleAnimArray)
+                {
+                    Sprite[] animArray = Resources.LoadAll<Sprite>("Role/" + FullID + "/Skin" + i + "/" + battleAnimType);
+
+                    if (0 != animArray.Length)
+                        tempBattleAnimDic.Add(battleAnimType, animArray);
+                }
+
+                BattleAnimList.Add(tempBattleAnimDic);
             }
             else break;
         }
 
-        foreach (SpecialAnimType specialAnimType in Enum.GetValues(typeof(SpecialAnimType)))
+        Array specialAnimArray = Enum.GetValues(typeof(SpecialAnimType));
+        foreach (SpecialAnimType specialAnimType in specialAnimArray)
             SpecialAnimDic.Add(specialAnimType, Resources.LoadAll<Sprite>("Role/" + FullID + "/Special/" + specialAnimType));
 
         Sprite[] tempSPA = Resources.LoadAll<Sprite>("Role/" + FullID + "/ProfilePicture");
@@ -392,7 +425,7 @@ public sealed class RoleData : DataBase
 
         if (!string.IsNullOrEmpty(data[index++]))
         {
-            int[] tempIA = ToolsE.SA2IA(data[index - 1].Split(Const.SPLIT_1));
+            int[] tempIA = data[index - 1].Split(Const.SPLIT_1).SA2IA();
 
             for (int i = 0; i != EXPERIENCE_REQUIRE_ARRAY.Length; i++)
                 EXPERIENCE_REQUIRE_ARRAY[i] = i < tempIA.Length ? tempIA[i] : MAX_EXPERIENCE;
@@ -400,11 +433,11 @@ public sealed class RoleData : DataBase
             EXPERIENCE_REQUIRE_ARRAY[0] = int.MinValue;
         }
 
-        if (!string.IsNullOrEmpty(data[index++])) LevelSkillDic.S2DI(data[index - 1]);
+        if (!string.IsNullOrEmpty(data[index++])) LevelLearnSkillDic.S2DI(data[index - 1]);
 
         if (string.IsNullOrEmpty(data[index]))
         {
-            index += 12;  //ÎŞÕ½¶·Êı¾İÂÔ¹ı³¤¶È
+            index += 14;  //æ— æˆ˜æ–—æ•°æ®ç•¥è¿‡é•¿åº¦
         }
         else
         {
@@ -415,14 +448,16 @@ public sealed class RoleData : DataBase
             DefenseBase = int.Parse(data[index++]);
             SpeedBase = int.Parse(data[index++]);
             LuckBase = int.Parse(data[index++]);
-            if (!string.IsNullOrEmpty(data[index++])) BattleIDGroup = ToolsE.S2IA(data[index - 1]);
-            if (!string.IsNullOrEmpty(data[index++])) DefaultOutfit = ToolsE.S2IA(data[index - 1]);
-            DefaultSkill = ToolsE.S2IA(data[index++]);
-            if (!string.IsNullOrEmpty(data[index++])) StealItem = ToolsE.S2IA(data[index - 1]);
-            if (!string.IsNullOrEmpty(data[index++])) DefeatItem = ToolsE.S2IA(data[index - 1]);
+            if (!string.IsNullOrEmpty(data[index++])) BattleBG = data[index - 1];
+            if (!string.IsNullOrEmpty(data[index++])) BattleIDGroup = data[index - 1].S2IA();
+            if (!string.IsNullOrEmpty(data[index++])) DefaultOutfit = data[index - 1].S2IA();
+            DefaultSkill = data[index++].S2IA();
+            if (!string.IsNullOrEmpty(data[index++])) JointSkillID = int.Parse(data[index - 1]);
+            if (!string.IsNullOrEmpty(data[index++])) StealItem = data[index - 1].S2IA();
+            if (!string.IsNullOrEmpty(data[index++])) DefeatItem = data[index - 1].S2IA();
         }
 
-        if (!string.IsNullOrEmpty(data[index++])) SellItem = ToolsE.S2IA(data[index - 1]);
+        if (!string.IsNullOrEmpty(data[index++])) SellItem = data[index - 1].S2IA();
 
         StateEventArray = new GameEventData[data.Length - index][];
         string[] tempSA;
@@ -432,86 +467,103 @@ public sealed class RoleData : DataBase
 
             StateEventArray[i] = new GameEventData[tempSA.Length];
             for (int j = 0; j != StateEventArray[i].Length; j++)
+            {
                 StateEventArray[i][j] = tempSA[j].S2GE(Const.SPLIT_2, Const.SPLIT_3);
+            }
         }
     }
 }
 
 
 /// <summary>
-/// ÎïÆ·Êı¾İ
+/// ç‰©å“æ•°æ®
 /// </summary>
 public sealed class ItemData : DataBase
 {
     /// <summary>
-    /// ¶ÑµşÊıÁ¿
+    /// å †å æ•°é‡
     /// </summary>
     public const int PILE_COUNT = 99;
 
     /// <summary>
-    /// Í¼±ê
+    /// å›¾æ ‡
     /// </summary>
     public readonly Sprite Icon;
 
     /// <summary>
-    /// Ãû³Æ
+    /// åç§°
     /// </summary>
     public readonly string Name;
 
     /// <summary>
-    /// ÃèÊö
+    /// æè¿°
     /// </summary>
     public readonly string Description;
 
     /// <summary>
-    /// ¾çÇéµÀ¾ß
+    /// ä¹°ä»·
     /// </summary>
-    public readonly bool StoryItem;
+    public readonly int BoughtPrice = -1;
 
     /// <summary>
-    /// ÏûºÄ
+    /// å”®ä»·
     /// </summary>
-    public readonly bool Reduce = true;
+    public readonly int SellPrice = -1;
 
     /// <summary>
-    /// ÊÇ·ñ×°±¸
+    /// è£…å¤‡
     /// </summary>
-    public readonly bool OutfitOrConsumable;
+    public readonly bool Outfit;
 
     /// <summary>
-    /// ×°±¸²¿Î»
+    /// è£…å¤‡éƒ¨ä½
     /// </summary>
     public readonly OutfitType OutfitType;
 
     /// <summary>
-    /// ½ÇÉ«ĞèÇó
+    /// æ­¦å™¨å•ä½“æ”»å‡»
+    /// </summary>
+    public readonly bool SingleAttack;
+
+    /// <summary>
+    /// åˆå‡»ä»™æœ¯
+    /// </summary>
+    public readonly int JointSkillID = -1;
+
+    /// <summary>
+    /// è§’è‰²éœ€æ±‚
     /// </summary>
     public readonly int[] RoleRequireArray;
 
     /// <summary>
-    /// µÈ¼¶ĞèÇó
+    /// ç­‰çº§éœ€æ±‚
     /// </summary>
     public readonly int LevelRequire;
 
     /// <summary>
-    /// Âò¼Û
+    /// æŠ•æ·ç‰©
     /// </summary>
-    public readonly int BoughtPrice;
+    public readonly bool Throw;
 
     /// <summary>
-    /// ÊÛ¼Û
+    /// æŠ•æ·æ•ˆæœ
     /// </summary>
-    public readonly int SellPrice;
+    public readonly ItemEvent ThrowEffect;
 
     /// <summary>
-    /// ¿ÉÂô³ö
+    /// ç‰¹æ•ˆIDå–è‡ªæŠ€èƒ½
     /// </summary>
-    public bool CanSell { get { return 0 == SellPrice; } }
+    public readonly int EffectSkillID;
 
     /// <summary>
-    /// ÎïÆ·Ğ§¹û¼¯ºÏ
+    /// å…¨é˜Ÿæ•ˆæœ
     /// </summary>
-    public readonly Dictionary<RoleEffectType, int> EventDic = new();
+    public readonly bool Effect2All;
+
+    /// <summary>
+    /// ç‰©å“æ•ˆæœé›†åˆ
+    /// </summary>
+    public readonly List<ItemEvent> EventList = new();
 
     public ItemData(string[] data) : base(data)
     {
@@ -521,175 +573,211 @@ public sealed class ItemData : DataBase
         int index = 1;
         Name = data[index++];
         Description = data[index++].Replace(Const.SPLIT_P, Const.SPLIT_N);
-        if (!string.IsNullOrEmpty(data[index++])) StoryItem = bool.Parse(data[index - 1]);
-        if (!string.IsNullOrEmpty(data[index++])) Reduce = bool.Parse(data[index - 1]);
-        if (!string.IsNullOrEmpty(data[index++])) OutfitOrConsumable = bool.Parse(data[index - 1]);
-        if (!string.IsNullOrEmpty(data[index++])) OutfitType = data[index - 1].S2E<OutfitType>();
-        if (!string.IsNullOrEmpty(data[index++])) RoleRequireArray = ToolsE.S2IA(data[index - 1]);
-        if (!string.IsNullOrEmpty(data[index++])) LevelRequire = int.Parse(data[index - 1]);
         if (!string.IsNullOrEmpty(data[index++])) BoughtPrice = int.Parse(data[index - 1]);
-        SellPrice = int.Parse(data[index++]);
+        if (!string.IsNullOrEmpty(data[index++])) SellPrice = int.Parse(data[index - 1]);
+        if (!string.IsNullOrEmpty(data[index++])) Outfit = bool.Parse(data[index - 1]);
+        if (!string.IsNullOrEmpty(data[index++])) OutfitType = data[index - 1].S2E<OutfitType>();
+        if (!string.IsNullOrEmpty(data[index++])) SingleAttack = bool.Parse(data[index - 1]);
+        if (!string.IsNullOrEmpty(data[index++])) JointSkillID = int.Parse(data[index - 1]);
+        if (!string.IsNullOrEmpty(data[index++])) RoleRequireArray = data[index - 1].S2IA();
+        if (!string.IsNullOrEmpty(data[index++])) LevelRequire = int.Parse(data[index - 1]);
+        if (!string.IsNullOrEmpty(data[index++])) Throw = bool.Parse(data[index - 1]);
+        if (!string.IsNullOrEmpty(data[index++])) ThrowEffect = new(data[index - 1].Split(Const.SPLIT_1));
+        if (!string.IsNullOrEmpty(data[index++])) EffectSkillID = int.Parse(data[index - 1]);
+        if (!string.IsNullOrEmpty(data[index++])) Effect2All = bool.Parse(data[index - 1]);
 
         int count = data.Length - index;
-        string[] tempSA;
         for (int i = 0; i != count; i++)
-        {
-            tempSA = data[index + i].Split(Const.SPLIT_1);
-
-            EventDic.Add(tempSA[0].S2E<RoleEffectType>(), int.Parse(tempSA[1]));
-        }
+            EventList.Add(new(data[index + i].Split(Const.SPLIT_1)));
     }
 }
 
 
 /// <summary>
-/// ×°±¸²¿Î»
+/// ç‰©å“äº‹ä»¶
+/// </summary>
+public sealed class ItemEvent
+{
+    public readonly RoleEffectType RoleEffectType;
+
+    public readonly int EffectValue;
+
+    public ItemEvent(string[] eventDataArray)
+    {
+        RoleEffectType = eventDataArray[0].S2E<RoleEffectType>();
+        EffectValue = int.Parse(eventDataArray[1]);
+    }
+}
+
+
+/// <summary>
+/// è£…å¤‡éƒ¨ä½
 /// </summary>
 public enum OutfitType
 {
     /// <summary>
-    /// Í·¿ø
+    /// å¤´ç›”
     /// </summary>
     Casque,
 
     /// <summary>
-    /// Åû·ç
+    /// æŠ«é£
     /// </summary>
     Cape,
 
     /// <summary>
-    /// »¤¼×
+    /// æŠ¤ç”²
     /// </summary>
     Armor,
 
     /// <summary>
-    /// ÎäÆ÷
+    /// æ­¦å™¨
     /// </summary>
     Weapon,
 
     /// <summary>
-    /// Ñ¥×Ó
+    /// é´å­
     /// </summary>
     Boots,
 
     /// <summary>
-    /// »¤Íó
+    /// æŠ¤è…•
     /// </summary>
     Bracers
 }
 
 
 /// <summary>
-/// ½ÇÉ«Ğ§¹ûÀàĞÍ
+/// è§’è‰²æ•ˆæœç±»å‹
 /// </summary>
 public enum RoleEffectType
 {
     /// <summary>
-    /// Ì¨´Ê
+    /// å°è¯
     /// </summary>
     Dialogue,
 
     /// <summary>
-    /// ¾­ÑéÔö¼Ó
+    /// ç»éªŒå¢åŠ 
     /// </summary>
     ExperienceAdd,
 
     /// <summary>
-    /// µÈ¼¶Ôö¼Ó
+    /// ç­‰çº§å¢åŠ 
     /// </summary>
     LevelAdd,
 
     /// <summary>
-    /// ÏÉÊõÑ§Ï°
+    /// ä»™æœ¯å­¦ä¹ 
     /// </summary>
     SkillLearn,
 
     /// <summary>
-    /// BuffÌí¼Ó
+    /// Buffæ·»åŠ 
     /// </summary>
     BuffAdd,
 
     /// <summary>
-    /// ÌåÁ¦Ôö¼Ó
+    /// ä½“åŠ›å¢åŠ 
     /// </summary>
     HPAdd,
 
     /// <summary>
-    /// ÌåÁ¦ÉÏÏŞÔö¼Ó
+    /// ä½“åŠ›å…¨ä½“å¢åŠ 
+    /// </summary>
+    HPAddAll,
+
+    /// <summary>
+    /// ä½“åŠ›ä¸Šé™å¢åŠ 
     /// </summary>
     HPMaxAdd,
 
     /// <summary>
-    /// ÕæÆøÔö¼Ó
+    /// çœŸæ°”å¢åŠ 
     /// </summary>
     MPAdd,
 
     /// <summary>
-    /// ÕæÆøÉÏÏŞÔö¼Ó
+    /// çœŸæ°”å…¨ä½“å¢åŠ 
+    /// </summary>
+    MPAddAll,
+
+    /// <summary>
+    /// çœŸæ°”ä¸Šé™å¢åŠ 
     /// </summary>
     MPMaxAdd,
 
     /// <summary>
-    /// ÎäÊõÔö¼Ó
+    /// æ­¦æœ¯å¢åŠ 
     /// </summary>
     AttackAdd,
 
     /// <summary>
-    /// ÁéÁ¦Ôö¼Ó
+    /// çµåŠ›å¢åŠ 
     /// </summary>
     MagicAdd,
 
     /// <summary>
-    /// ·ÀÓùÔö¼Ó
+    /// é˜²å¾¡å¢åŠ 
     /// </summary>
     DefenseAdd,
 
     /// <summary>
-    /// Éí·¨Ôö¼Ó
+    /// èº«æ³•å¢åŠ 
     /// </summary>
     SpeedAdd,
 
     /// <summary>
-    /// ¼ªÔËÔö¼Ó
+    /// å‰è¿å¢åŠ 
     /// </summary>
     LuckAdd
 }
 
 
 /// <summary>
-/// ÏÉÊõÊı¾İ
+/// ä»™æœ¯æ•°æ®
 /// </summary>
 public sealed class SkillData : DataBase
 {
     /// <summary>
-    /// ÌØĞ§¼¯ºÏ
+    /// ç‰¹æ•ˆé›†åˆ
     /// </summary>
     public readonly Sprite[] EffectArray;
 
     /// <summary>
-    /// Ãû³Æ
+    /// åç§°
     /// </summary>
     public readonly string Name;
 
     /// <summary>
-    /// ÃèÊö
+    /// æè¿°
     /// </summary>
     public readonly string Description;
 
     /// <summary>
-    /// µ¥/ÈºÌå
+    /// å•/ç¾¤ä½“
     /// </summary>
-    public readonly bool IsSingle;
+    public readonly bool Effect2All;
 
     /// <summary>
-    /// ÕæÆøÏûºÄ
+    /// çœŸæ°”æ¶ˆè€—
     /// </summary>
     public readonly int Cost;
 
     /// <summary>
-    /// ÊıÖµ
+    /// æ•°å€¼
     /// </summary>
     public readonly int Value;
+
+    /// <summary>
+    /// ç‰¹æ•ˆID
+    /// </summary>
+    public readonly int EffectID;
+
+    /// <summary>
+    /// ç‰¹æ•ˆåç§»
+    /// </summary>
+    public readonly Vector2 EffectOffset;
 
     /// <summary>
     /// Buff ID
@@ -697,7 +785,7 @@ public sealed class SkillData : DataBase
     public readonly int BuffID;
 
     /// <summary>
-    /// BuffÌí¼Ó³É¹¦ÂÊ
+    /// Buffæ·»åŠ æˆåŠŸç‡
     /// </summary>
     public readonly uint SuccessRate;
 
@@ -709,65 +797,68 @@ public sealed class SkillData : DataBase
         int index = 1;
         Name = data[index++];
         Description = data[index++].Replace(Const.SPLIT_P, Const.SPLIT_N);
-        IsSingle = bool.Parse(data[index++]);
         Cost = int.Parse(data[index++]);
         Value = int.Parse(data[index++]);
+        if (!string.IsNullOrEmpty(data[index++])) EffectID = int.Parse(data[index - 1]);
+        if (!string.IsNullOrEmpty(data[index++])) EffectOffset = data[index - 1].Split(Const.SPLIT_1).SA2V2();
+        if (!string.IsNullOrEmpty(data[index++])) BuffID = int.Parse(data[index - 1]);
+        Effect2All = bool.Parse(data[index++]);
     }
 }
 
 
 /// <summary>
-/// Ì¨´ÊÊı¾İ
+/// å°è¯æ•°æ®
 /// </summary>
 public sealed class DialogueData : DataBase
 {
     //Property
     #region
     /// <summary>
-    /// ×Ô¶¯²¥·Å
+    /// è‡ªåŠ¨æ’­æ”¾
     /// </summary>
     public readonly bool AutoPlay;
 
     /// <summary>
-    /// ¶Ô»°ÈË
+    /// å¯¹è¯äºº
     /// </summary>
     private readonly int _speaker = -1;
 
     /// <summary>
-    /// ¶Ô»°ÈË
+    /// å¯¹è¯äºº
     /// </summary>
     public RoleData Speaker { get { return -1 == _speaker ? null : DataManager_.RoleDataArray[_speaker]; } }
 
     /// <summary>
-    /// Ì¨´ÊÍ·ÏñÀàĞÍ
+    /// å°è¯å¤´åƒç±»å‹
     /// </summary>
     public readonly ExpressionType ExpressionType = ExpressionType.Nil;
 
     /// <summary>
-    /// Ì¨´ÊÎÄ±¾
+    /// å°è¯æ–‡æœ¬
     /// </summary>
     public readonly string DialogueText;
 
     /// <summary>
-    /// ¿ªÊ¼ÊÂ¼ş
+    /// å¼€å§‹äº‹ä»¶
     /// </summary>
     public readonly GameEventData StartEvent;
 
     /// <summary>
-    /// ¿ªÊ¼ÊÂ¼ş
+    /// å¼€å§‹äº‹ä»¶
     /// </summary>
     public readonly GameEventData StartEvent_;
 
     /// <summary>
-    /// ½áÊøÊÂ¼ş¼¯ºÏ
+    /// ç»“æŸäº‹ä»¶é›†åˆ
     /// </summary>
     public readonly GameEventData[] EventArray;
     #endregion
 
     /// <summary>
-    /// ¹¹Ôì
+    /// æ„é€ 
     /// </summary>
-    /// <param name="data">Êı¾İ</param>
+    /// <param name="data">æ•°æ®</param>
     public DialogueData(string[] data) : base(data)
     {
         int index = 1;
@@ -791,56 +882,56 @@ public sealed class DialogueData : DataBase
 
 
 /// <summary>
-/// ±íÇéÀàĞÍ
+/// è¡¨æƒ…ç±»å‹
 /// </summary>
 public enum ExpressionType
 {
     /// <summary>
-    /// ÈÃÒ»ÇĞ¶¼¹éÓÚÎŞ°É...
+    /// è®©ä¸€åˆ‡éƒ½å½’äºæ— å§...
     /// </summary>
     Nil = -1,
 
     /// <summary>
-    /// ÆÕÍ¨
+    /// æ™®é€š
     /// </summary>
     Normal,
 
     /// <summary>
-    /// Î¢Ğ¦
+    /// å¾®ç¬‘
     /// </summary>
     Smile,
 
     /// <summary>
-    /// ÄãÃÇÕâÑù×ÓÊÇ²»ĞĞµÄ£¡ÎÒ½ñÌìËãÊÇµÃ×ïÁËÄãÃÇÒ»ÏÂ£¡
+    /// ä½ ä»¬è¿™æ ·å­æ˜¯ä¸è¡Œçš„ï¼æˆ‘ä»Šå¤©ç®—æ˜¯å¾—ç½ªäº†ä½ ä»¬ä¸€ä¸‹ï¼
     /// </summary>
     Angry,
 
     /// <summary>
-    /// ±¯ÉË
+    /// æ‚²ä¼¤
     /// </summary>
     Sad,
 }
 
 
 /// <summary>
-/// ÌáÊ¾Êı¾İ
+/// æç¤ºæ•°æ®
 /// </summary>
 public sealed class TipData : DataBase
 {
     /// <summary>
-    /// ÌáÊ¾ÎÄ±¾
+    /// æç¤ºæ–‡æœ¬
     /// </summary>
     public readonly string TipText;
 
     /// <summary>
-    /// ÊÂ¼ş¼¯ºÏ
+    /// äº‹ä»¶é›†åˆ
     /// </summary>
     public readonly GameEventData[] EventArray;
 
     /// <summary>
-    /// ¹¹Ôì
+    /// æ„é€ 
     /// </summary>
-    /// <param name="data">Êı¾İ</param>
+    /// <param name="data">æ•°æ®</param>
     public TipData(string[] data) : base(data)
     {
         int index = 1;
@@ -858,24 +949,24 @@ public sealed class TipData : DataBase
 
 
 /// <summary>
-/// Ñ¡ÔñÊı¾İ
+/// é€‰æ‹©æ•°æ®
 /// </summary>
 public sealed class ChooseData : DataBase
 {
     /// <summary>
-    /// ½ÓÊÜÊÂ¼ş¼¯ºÏ
+    /// æ¥å—äº‹ä»¶é›†åˆ
     /// </summary>
     public readonly GameEventData[] AcceptEventArray;
 
     /// <summary>
-    /// ¾Ü¾øÊÂ¼ş¼¯ºÏ
+    /// æ‹’ç»äº‹ä»¶é›†åˆ
     /// </summary>
     public readonly GameEventData[] RefuseEventArray;
 
     /// <summary>
-    /// ¹¹Ôì
+    /// æ„é€ 
     /// </summary>
-    /// <param name="data">Êı¾İ</param>
+    /// <param name="data">æ•°æ®</param>
     public ChooseData(string[] data) : base(data)
     {
         int index = 1;

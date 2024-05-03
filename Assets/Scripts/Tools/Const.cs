@@ -6,11 +6,6 @@ using UnityEngine;
 public static class Const
 {
     /// <summary>
-    /// 最大可控角色数
-    /// </summary>
-    public const int MAX_PLAYER_COUNT = 5;
-
-    /// <summary>
     /// 日夜切换时间
     /// </summary>
     public const float TIME_CHANGE_DURATION = 2;
@@ -18,7 +13,12 @@ public static class Const
     /// <summary>
     /// 隐藏位置
     /// </summary>
-    public static readonly Vector2 HIDDEN_P = new(100000, 0);
+    public static readonly Vector2 HIDDEN_P = new(90000, 0);
+
+    /// <summary>
+    /// 透明
+    /// </summary>
+    public static readonly Color CLEAR = new(1, 1, 1, 0);
 
     /// <summary>
     /// 夜晚颜色
@@ -26,9 +26,24 @@ public static class Const
     public static readonly Color NIGHT_COLOR = new(0.5f, 1, 1);
 
     /// <summary>
+    /// 深灰
+    /// </summary>
+    public static readonly Color CHARCOAL = new(0.25f, 0.25f, 0.25f);
+
+    /// <summary>
+    /// 浅灰
+    /// </summary>
+    public static readonly Color GREYISH = new(0.75f, 0.75f, 0.75f);
+
+    /// <summary>
     /// 等待物理帧
     /// </summary>
     public static readonly WaitForFixedUpdate WAIT_FOR_FIXED_UPDATE = new();
+
+    /// <summary>
+    /// 等待0.05秒
+    /// </summary>
+    public static readonly WaitForSeconds WAIT_FOR_POINT_ZERO_5S = new(0.05f);
 
     /// <summary>
     /// 等待0.1秒

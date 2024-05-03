@@ -2,17 +2,17 @@ using System;
 using UnityEngine;
 
 /// <summary>
-/// ³¡¾°µÀ¾ß¶¯»­
+/// åœºæ™¯é“å…·åŠ¨ç”»
 /// </summary>
 public class StuffAnim : Stuff
 {
     /// <summary>
-    /// Ò»´ÎĞÔ
+    /// ä¸€æ¬¡æ€§
     /// </summary>
     protected bool IsOneShot = true;
 
     /// <summary>
-    /// ¶¯»­¼¯ºÏ
+    /// åŠ¨ç”»é›†åˆ
     /// </summary>
     protected Sprite[] _animArray;
 
