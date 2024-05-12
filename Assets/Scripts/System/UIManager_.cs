@@ -238,6 +238,16 @@ public enum UIPanel
     BattleSkillPanel,
 
     /// <summary>
+    /// 结算面板
+    /// </summary>
+    SettlementPanel,
+
+    /// <summary>
+    /// 团灭面板
+    /// </summary>
+    GGPanel,
+
+    /// <summary>
     /// Escape面板
     /// </summary>
     EscapePanel,

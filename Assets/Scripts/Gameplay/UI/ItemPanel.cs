@@ -189,29 +189,22 @@ public sealed class ItemPanel : UIPanelBase
                 {
                     if (-1 == SelectItem.SellPrice)
                     {
-                        if (0 == SelectItem.EventList.Count)
+                        if (0 == SelectItem.EventArray.Length)
                         {
-                            GameManager_.Trigger(new(GameEventType.Tip, "46"));
+                            GameManager_.Trigger(GameEventType.Tip, "46");
                         }
                         else
                         {
                             UIManager_.PanelClear();
-                            GameManager_.Trigger(new(GameEventType.ItemUse, new string[] { GameManager_.PlayerList[0].RoleData.ID.ToString(), SelectItem.ID.ToString() }));
+                            GameManager_.Trigger(GameEventType.ItemUse, GameManager_.PlayerList[0].RoleData.ID.ToString(), SelectItem.ID.ToString());
                         }
                     }
-                    else GameManager_.Trigger(new(GameEventType.UIPanel, new string[] { (SelectItem.Outfit ? UIPanel.EquipPanel : UIPanel.UsePanel).ToString(), "False" }));
+                    else GameManager_.Trigger(GameEventType.UIPanel, (SelectItem.Outfit ? UIPanel.EquipPanel : UIPanel.UsePanel).ToString(), "False");
                 }, item.Name, item.ID, index, GameManager_.Bag[itemID]);
             }
 
             _itemGridT.localPosition = _itemGridT.localPosition.V3ModifyY(0);
             Select(_lastIndex = _currentIndex = _topLineIndex = 0);
         }
-    }
-
-    public override void Inactive(bool hide)
-    {
-        base.Inactive(hide);
-
-        _selectorArray[_currentIndex].Unselect();
     }
 }

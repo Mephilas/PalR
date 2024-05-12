@@ -7,7 +7,7 @@ using DG.Tweening;
 /// <summary>
 /// 角色
 /// </summary>
-public partial class Role : SpriteBase, System.IComparable<Role>
+public partial class Role : SpriteBase
 {
     //Property
     #region
@@ -110,7 +110,7 @@ public partial class Role : SpriteBase, System.IComparable<Role>
     /// <summary>
     /// 体力
     /// </summary>
-    public int HP { get; private set; }
+    public int HP { get; protected set; }
 
     /// <summary>
     /// 最大体力
@@ -125,27 +125,27 @@ public partial class Role : SpriteBase, System.IComparable<Role>
     /// <summary>
     /// 最大真气
     /// </summary>
-    public int MPMax { get; private set; }
+    public int MPMax { get; protected set; }
 
     /// <summary>
     /// 武术
     /// </summary>
-    public int Attack { get; private set; }
+    public int Attack { get; set; }
 
     /// <summary>
     /// 灵力
     /// </summary>
-    public int Magic { get; private set; }
+    public int Magic { get; set; }
 
     /// <summary>
     /// 防御
     /// </summary>
-    public int Defense { get; private set; }
+    public int Defense { get; set; }
 
     /// <summary>
     /// 身法
     /// </summary>
-    public int Speed { get; private set; }
+    public int Speed { get; set; }
 
     /// <summary>
     /// 吉运
@@ -161,6 +161,46 @@ public partial class Role : SpriteBase, System.IComparable<Role>
     /// 仙术集合
     /// </summary>
     public readonly List<int> SkillList = new();
+
+    /// <summary>
+    /// 物抗
+    /// </summary>
+    public int PhiResistance{ get; private set; }
+
+    /// <summary>
+    /// 风抗
+    /// </summary>
+    public int WindResistance{ get; private set; }
+
+    /// <summary>
+    /// 雷抗
+    /// </summary>
+    public int ThunderResistance{ get; private set; }
+
+    /// <summary>
+    /// 水抗
+    /// </summary>
+    public int WaterResistance{ get; private set; }
+
+    /// <summary>
+    /// 火抗
+    /// </summary>
+    public int FireResistance{ get; private set; }
+
+    /// <summary>
+    /// 土抗
+    /// </summary>
+    public int SoilResistance{ get; private set; }
+
+    /// <summary>
+    /// 毒抗
+    /// </summary>
+    public int PoisonResistance{ get; private set; }
+
+    /// <summary>
+    /// 巫抗
+    /// </summary>
+    public int WitcheryResistance{ get; private set; }
 
     /// <summary>
     /// 存档数据
@@ -258,23 +298,23 @@ public partial class Role : SpriteBase, System.IComparable<Role>
         if (IsMoving) SortingOrder();
     }
 
-    protected override void OnTriggerEnter(Collider other)
+    protected override void OnTriggerEnter(Collider collider)
     {
-        base.OnTriggerEnter(other);
+        base.OnTriggerEnter(collider);
 
         //ToolsE.LogWarning(other.gameObject);
 
-        if (other.gameObject.CompareTag("Portal"))
+        if (collider.gameObject.CompareTag("Portal"))
         {
             string[] exitPath = DataManager_.PortalDataDic[ColliderPath()].Split(Const.SPLIT_1);
             _portalP = Root_.Instance.CGC<Transform>(exitPath[0]).position;
-            GameManager_.Trigger(new(GameEventType.RoleTransfer, new string[] { RoleData.ID.ToString(), _portalP.x.ToString(), _portalP.y.ToString(), (_portalP.z * 0.833).ToString() }));
+            GameManager_.Trigger(GameEventType.RoleTransfer, RoleData.ID.ToString(), _portalP.x.ToString(), _portalP.y.ToString(), (_portalP.z * 0.833).ToString());
         }
-        else if (other.gameObject.CompareTag("Trigger") && CompareTag(nameof(Player)))
+        else if (collider.gameObject.CompareTag("Trigger") && GameManager_.Leader == this)
             GameManager_.TriggerAll(DataManager_.MapEventDataDic[ColliderPath()]);
 
 
-        string ColliderPath() => other.transform.parent.name + Const.SPLIT_3 + other.name;
+        string ColliderPath() => collider.transform.parent.name + Const.SPLIT_3 + collider.name;
     }
 
     /// <summary>
@@ -294,7 +334,7 @@ public partial class Role : SpriteBase, System.IComparable<Role>
         OutfitDic.Clear();
         SkillList.Clear();
 
-        GameManager_.Trigger(new(GameEventType.RoleState, new string[] { RoleData.ID.ToString(), "0" }));
+        GameManager_.Trigger(GameEventType.RoleState, RoleData.ID.ToString(), "0");
         Experience = 0;
         Level = 1;
         BattleDataClone();
@@ -303,8 +343,8 @@ public partial class Role : SpriteBase, System.IComparable<Role>
         {
             for (int i = 0; i != RoleData.DefaultOutfit.Length; i++)
             {
-                GameManager_.Trigger(new(GameEventType.ItemAdd, RoleData.DefaultOutfit[i].ToString()));
-                GameManager_.Trigger(new(GameEventType.ItemEquip, new string[] { RoleData.ID.ToString(), RoleData.DefaultOutfit[i].ToString() }));
+                GameManager_.Trigger(GameEventType.ItemAdd, RoleData.DefaultOutfit[i].ToString());
+                GameManager_.Trigger(GameEventType.ItemEquip, RoleData.ID.ToString(), RoleData.DefaultOutfit[i].ToString());
             }
         }
 
@@ -320,18 +360,43 @@ public partial class Role : SpriteBase, System.IComparable<Role>
     /// </summary>
     protected void BattleDataClone(Role source = null)
     {
-        HP = HPMax = RoleData.HPBase;
-        MP = MPMax = RoleData.MPBase;
-        Attack = RoleData.AttackBase;
-        Magic = RoleData.MagicBase;
-        Defense = RoleData.DefenseBase;
-        Speed = RoleData.SpeedBase;
-        Luck = RoleData.LuckBase;
-
-        if (null != source)
+        if (null == source)
+        {
+            HP = HPMax = RoleData.HPBase;
+            MP = MPMax = RoleData.MPBase;
+            Attack = RoleData.AttackBase;
+            Magic = RoleData.MagicBase;
+            Defense = RoleData.DefenseBase;
+            Speed = RoleData.SpeedBase;
+            Luck = RoleData.LuckBase;
+            PhiResistance = RoleData.PhiResistanceBase;
+            WindResistance = RoleData.WindResistanceBase;
+            ThunderResistance = RoleData.ThunderResistanceBase;
+            WaterResistance = RoleData.WaterResistanceBase;
+            FireResistance = RoleData.FireResistanceBase;
+            SoilResistance = RoleData.SoilResistanceBase;
+            PoisonResistance = RoleData.PoisonResistanceBase;
+            WitcheryResistance = RoleData.WitcheryResistanceBase;
+        }
+        else
         {
             HP = source.HP;
+            HPMax = source.HPMax;
             MP = source.MP;
+            MPMax = source.MPMax;
+            Attack = source.Attack;
+            Magic = source.Magic;
+            Defense = source.Defense;
+            Speed = source.Speed;
+            Luck = source.Luck;
+            PhiResistance = source.PhiResistance;
+            WindResistance = source.WindResistance;
+            ThunderResistance = source.ThunderResistance;
+            WaterResistance = source.WaterResistance;
+            FireResistance = source.FireResistance;
+            SoilResistance = source.SoilResistance;
+            PoisonResistance = source.PoisonResistance;
+            WitcheryResistance = source.WitcheryResistance;
 
             if (OutfitDic.ContainsKey(OutfitType.Bracers))
                 OutfitDic[OutfitType.Bracers] = source.OutfitDic[OutfitType.Bracers];
@@ -341,6 +406,16 @@ public partial class Role : SpriteBase, System.IComparable<Role>
             for (int i = 0; i != source.SkillList.Count; i++)
                 SkillList.Add(source.SkillList[i]);
         }
+    }
+
+    /// <summary>
+    /// 战斗数据写回
+    /// </summary>
+    /// <param name="source"></param>
+    public void BattleDataWriteBack(Role source)
+    {
+        HP = source.HP;
+        MP = source.MP;
     }
 
     /// <summary>
@@ -395,7 +470,7 @@ public partial class Role : SpriteBase, System.IComparable<Role>
     /// </summary>
     public void Interact()
     {
-        if (-1 != RoleData.DialogueIndex) GameManager_.Trigger(new(GameEventType.Dialogue, RoleData.DialogueIndex.ToString()));
+        if (-1 != RoleData.DialogueIndex) GameManager_.Trigger(GameEventType.Dialogue, RoleData.DialogueIndex.ToString());
     }
 
     /// <summary>
@@ -450,17 +525,17 @@ public partial class Role : SpriteBase, System.IComparable<Role>
     /// </summary>
     /// <param name="roleEffectType">角色效果</param>
     /// <param name="value">效果数值</param>
-    public void Trigger(ItemEvent itemEvent) => RoleEffectDic[itemEvent.RoleEffectType].Invoke(itemEvent.EffectValue);
+    public void Trigger(RoleEventData itemEvent) => RoleEffectDic[itemEvent.RoleEffectType].Invoke(itemEvent.Value);
 
     /// <summary>
     /// 角色效果全部触发
     /// </summary>
     /// <param name="roleEffectArray">角色效果集合</param>
     /// <param name="valueArray">效果数值集合</param>
-    public void Trigger(List<ItemEvent> itemEventList)
+    public void Trigger(RoleEventData[] itemEventArray)
     {
-        for (int i = 0; i != itemEventList.Count; i++)
-            Trigger(itemEventList[i]);
+        for (int i = 0; i != itemEventArray.Length; i++)
+            Trigger(itemEventArray[i]);
     }
 
     /// <summary>
@@ -474,13 +549,13 @@ public partial class Role : SpriteBase, System.IComparable<Role>
         if (RoleData.LevelLearnSkillDic.ContainsKey(++Level))
             SkillList.Add(RoleData.LevelLearnSkillDic[Level]);
 
-        HP = Random.Range(RoleData.HP_GROW_MIN, RoleData.HP_GROW_MAX + 1);
-        MP = Random.Range(RoleData.MP_GROW_MIN, RoleData.MP_GROW_MAX + 1);
-        Attack = Random.Range(RoleData.ATTACK_GROW_MIN, RoleData.ATTACK_GROW_MAX + 1);
-        Magic = Random.Range(RoleData.MAGIC_GROW_MIN, RoleData.MAGIC_GROW_MAX + 1);
-        Defense = Random.Range(RoleData.DEFENSE_GROW_MIN, RoleData.DEFENSE_GROW_MAX + 1);
-        Speed = Random.Range(RoleData.SPEED_GROW_MIN, RoleData.SPEED_GROW_MAX + 1);
-        Luck = Random.Range(RoleData.LUCK_GROW_MIN, RoleData.LUCK_GROW_MAX + 1);
+        HP += Random.Range(RoleData.HP_GROW_MIN, RoleData.HP_GROW_MAX + 1);
+        MP += Random.Range(RoleData.MP_GROW_MIN, RoleData.MP_GROW_MAX + 1);
+        Attack += Random.Range(RoleData.ATTACK_GROW_MIN, RoleData.ATTACK_GROW_MAX + 1);
+        Magic += Random.Range(RoleData.MAGIC_GROW_MIN, RoleData.MAGIC_GROW_MAX + 1);
+        Defense += Random.Range(RoleData.DEFENSE_GROW_MIN, RoleData.DEFENSE_GROW_MAX + 1);
+        Speed += Random.Range(RoleData.SPEED_GROW_MIN, RoleData.SPEED_GROW_MAX + 1);
+        Luck += Random.Range(RoleData.LUCK_GROW_MIN, RoleData.LUCK_GROW_MAX + 1);
     }
 
     /// <summary>
@@ -528,7 +603,9 @@ public partial class Role : SpriteBase, System.IComparable<Role>
     {
         SkillData skill = DataManager_.SkillDataArray[int.Parse(data[1])];
         MP -= skill.Cost;
-        GameManager_.Trigger(new(GameEventType.HPAdd, new string[] { data[2], skill.Value.ToString() }));
+        Role target = GameManager_.RoleList[int.Parse(data[2])];
+        for (int i = 0; i != skill.EventArray.Length; i++)
+            target.Trigger(skill.EventArray[i].RoleEffectType, skill.EventArray[i].Value);
     }
 
     /// <summary>
@@ -539,9 +616,9 @@ public partial class Role : SpriteBase, System.IComparable<Role>
     {
         ItemData item = DataManager_.ItemDataArray[int.Parse(data[1])];
 
-        Trigger(item.EventList);
+        Trigger(item.EventArray);
 
-        GameManager_.Trigger(new(GameEventType.ItemAdd, new string[] { item.ID.ToString(), "-1" }));
+        GameManager_.Trigger(GameEventType.ItemAdd, item.ID.ToString(), "-1");
     }
 
     /// <summary>
@@ -569,19 +646,12 @@ public partial class Role : SpriteBase, System.IComparable<Role>
     /// <param name="equipOrRemove">穿/卸</param>
     private void Equip(ItemData outfit, bool equipOrRemove)
     {
-        for (int i = 0; i != outfit.EventList.Count; i++)
-            Trigger(outfit.EventList[i].RoleEffectType, equipOrRemove ? outfit.EventList[i].EffectValue : -outfit.EventList[i].EffectValue);
+        for (int i = 0; i != outfit.EventArray.Length; i++)
+            Trigger(outfit.EventArray[i].RoleEffectType, equipOrRemove ? outfit.EventArray[i].Value : -outfit.EventArray[i].Value);
 
-        GameManager_.Trigger(new(GameEventType.ItemAdd, new string[] { outfit.ID.ToString(), (equipOrRemove ? -1 : 1).ToString() }));
+        GameManager_.Trigger(GameEventType.ItemAdd, outfit.ID.ToString(), (equipOrRemove ? -1 : 1).ToString());
         if (!equipOrRemove) ItemPanel.SelectItem = DataManager_.ItemDataArray[outfit.ID];
     }
-
-    /// <summary>
-    /// 排序，后续根据身法调整
-    /// </summary>
-    /// <param name="role"></param>
-    /// <returns></returns>
-    public int CompareTo(Role role) => RoleData.ID - role.RoleData.ID;
 
     public void RoleFollow(string[] data) => IsMoving = _followSwitch = bool.Parse(data[1]);
     public void RoleState(string[] data)
@@ -599,7 +669,7 @@ public partial class Role : SpriteBase, System.IComparable<Role>
         SortingOrder();
 
         if (5 == data.Length)
-            GameManager_.Trigger(new(GameEventType.RoleRotate, new string[] { RoleData.ID.ToString(), data[4] }));
+            GameManager_.Trigger(GameEventType.RoleRotate, RoleData.ID.ToString(), data[4]);
 
         if (isPortal && UIManager_.PanelCompare(UIPanel.BasicPanel)) Invoke(nameof(Transferred), TRANSFERRED_TIME);
     }
@@ -608,7 +678,7 @@ public partial class Role : SpriteBase, System.IComparable<Role>
         IsMoving = true;
 
         Transform.DOLocalMove(data.SA2V3(), float.Parse(data[4])).onComplete =
-            () => { if (5 < data.Length) GameManager_.Trigger(new(GameEventType.Dialogue, data[5])); IsMoving = false; };
+            () => { if (5 < data.Length) GameManager_.Trigger(GameEventType.Dialogue, data[5]); IsMoving = false; };
 
         //SortingOrder();
     }
@@ -643,7 +713,7 @@ public partial class Role : SpriteBase, System.IComparable<Role>
     {
         StopCoroutine(nameof(AnimationC));
 
-        CurrentAnimArray = RoleData.CurrentBattleAnimDic[data[1].S2E<BattleAnimType>()];
+        CurrentAnimArray = RoleData.CurrentBattleAnimDic[data[1].S2E<RoleBattleState>()];
 
         StartCoroutine(nameof(AnimationC));
     }
@@ -666,7 +736,7 @@ public partial class Role : SpriteBase, System.IComparable<Role>
         int index = 5;
 
         //ToolsE.LogWarning(data);
-        GameManager_.Trigger(new(GameEventType.RoleTransfer, data.SACut(index)));
+        GameManager_.Trigger(GameEventType.RoleTransfer, data.SACut(index));
         foreach (int outfitID in OutfitDic.Values)
             Equip(DataManager_.ItemDataArray[outfitID], false);
 
@@ -684,21 +754,23 @@ public partial class Role : SpriteBase, System.IComparable<Role>
         Speed = int.Parse(data[index++]);
         Luck = int.Parse(data[index++]);
 
-        for (int i = 0; i != RoleData.DefaultOutfit.Length; i++)
+        int[] tempIA = data[index++].S2IA(Const.SPLIT_3);
+        for (int i = 0; i != tempIA.Length; i++)
         {
-            GameManager_.Trigger(new(GameEventType.ItemAdd, RoleData.DefaultOutfit[i].ToString()));
-            GameManager_.Trigger(new(GameEventType.ItemEquip, new string[] { RoleData.ID.ToString(), RoleData.DefaultOutfit[i].ToString() }));
+            GameManager_.Trigger(GameEventType.ItemAdd, tempIA[i].ToString());
+            GameManager_.Trigger(GameEventType.ItemEquip, RoleData.ID.ToString(), tempIA[i].ToString());
 
             //Equip(DataManager_.ItemDataArray[RoleData.DefaultOutfit[i]], true);
         }
 
-        for (int i = 0; i != RoleData.DefaultSkill.Length; i++)
-            SkillLearn(RoleData.DefaultSkill[i]);
+        tempIA = data[index++].S2IA(Const.SPLIT_3);
+        for (int i = 0; i != tempIA.Length; i++)
+            SkillLearn(tempIA[i]);
 
-        GameManager_.Trigger(new(GameEventType.PlayerJoin, RoleData.ID.ToString()));
+        GameManager_.Trigger(GameEventType.PlayerJoin, RoleData.ID.ToString());
     }
 
-    private void Dialogue(int value) => GameManager_.Trigger(new(GameEventType.Dialogue, value.ToString()));
+    private void Dialogue(int value) => GameManager_.Trigger(GameEventType.Dialogue, value.ToString());
     private void ExperienceAdd(int value)
     {
         if (RoleData.EXPERIENCE_REQUIRE_ARRAY[Level] <= (Experience += value))
@@ -715,6 +787,7 @@ public partial class Role : SpriteBase, System.IComparable<Role>
     {
         if (HPMax < (HP += value))
             HP = HPMax;
+        else if (HP < 0) HP = 0;
     }
     private void HPMaxAdd(int value)
     {
@@ -737,6 +810,133 @@ public partial class Role : SpriteBase, System.IComparable<Role>
     private void SpeedAdd(int value) => Speed += value;
     private void LuckAdd(int value) => Luck += value;
     #endregion
+}
+
+
+/// <summary>
+/// 角色效果类型
+/// </summary>
+public enum RoleEffectType
+{
+    /// <summary>
+    /// 台词
+    /// </summary>
+    Dialogue,
+
+    /// <summary>
+    /// 经验增加
+    /// </summary>
+    ExperienceAdd,
+
+    /// <summary>
+    /// 等级增加
+    /// </summary>
+    LevelAdd,
+
+    /// <summary>
+    /// 仙术学习
+    /// </summary>
+    SkillLearn,
+
+    /// <summary>
+    /// Buff添加
+    /// </summary>
+    BuffAdd,
+
+    /// <summary>
+    /// 异常清除
+    /// </summary>
+    DebuffClear,
+
+    /// <summary>
+    /// 复活
+    /// </summary>
+    Resurrect,
+
+    /// <summary>
+    /// 体力增加
+    /// </summary>
+    HPAdd,
+
+    /// <summary>
+    /// 体力上限增加
+    /// </summary>
+    HPMaxAdd,
+
+    /// <summary>
+    /// 真气增加
+    /// </summary>
+    MPAdd,
+
+    /// <summary>
+    /// 真气上限增加
+    /// </summary>
+    MPMaxAdd,
+
+    /// <summary>
+    /// 武术增加
+    /// </summary>
+    AttackAdd,
+
+    /// <summary>
+    /// 灵力增加
+    /// </summary>
+    MagicAdd,
+
+    /// <summary>
+    /// 防御增加
+    /// </summary>
+    DefenseAdd,
+
+    /// <summary>
+    /// 身法增加
+    /// </summary>
+    SpeedAdd,
+
+    /// <summary>
+    /// 吉运增加
+    /// </summary>
+    LuckAdd,
+
+    /// <summary>
+    /// 物理抗性增加
+    /// </summary>
+    PhiResistanceAdd,
+
+    /// <summary>
+    /// 风抗性增加
+    /// </summary>
+    WindResistanceAdd,
+
+    /// <summary>
+    /// 雷抗性增加
+    /// </summary>
+    ThunderResistanceAdd,
+
+    /// <summary>
+    /// 水抗性增加
+    /// </summary>
+    WaterResistanceAdd,
+
+    /// <summary>
+    /// 火抗性增加
+    /// </summary>
+    FireResistanceAdd,
+
+    /// <summary>
+    /// 土抗性增加
+    /// </summary>
+    SoilResistanceAdd,
+
+    /// <summary>
+    /// 毒抗性增加
+    /// </summary>
+    PoisonResistanceAdd,
+
+    /// <summary>
+    /// 巫术抗性增加
+    /// </summary>
+    WitcheryResistanceAdd
 }
 
 
@@ -811,11 +1011,6 @@ public enum SpecialAnimType
     Hug,
 
     /// <summary>
-    /// 躺
-    /// </summary>
-    Lie,
-
-    /// <summary>
     /// 下跪
     /// </summary>
     Knee,
@@ -824,6 +1019,11 @@ public enum SpecialAnimType
     /// 磕头
     /// </summary>
     Kowtow,
+
+    /// <summary>
+    /// 倒地
+    /// </summary>
+    Lie,
 
     /// <summary>
     /// 引诱
@@ -878,14 +1078,14 @@ public enum SpecialAnimType
     /// <summary>
     /// 沉睡
     /// </summary>
-    Slumber,
+    Slumber
 }
 
 
 /// <summary>
-/// 战斗动画
+/// 战斗状态
 /// </summary>
-public enum BattleAnimType
+public enum RoleBattleState
 {
     /// <summary>
     /// 死亡
@@ -918,12 +1118,7 @@ public enum BattleAnimType
     NormalAttack,
 
     /// <summary>
-    /// 技能
+    /// 仙术
     /// </summary>
-    Skill,
-
-    /// <summary>
-    /// 特殊技能
-    /// </summary>
-    SpecialSkill
+    Skill
 }

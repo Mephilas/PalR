@@ -46,7 +46,7 @@ public abstract class UIPanelBase : UIBase_
     /// <summary>
     /// 存档面板事件
     /// </summary>
-    protected static readonly GameEventData SL_PANEL_EVENT = new(GameEventType.UIPanel, new string[] { UIPanel.SLPanel.ToString(), "False" });
+    protected static readonly GameEventData SL_PANEL_EVENT = new(GameEventType.UIPanel, UIPanel.SLPanel.ToString(), "False");
 
     /// <summary>
     /// BG停止事件

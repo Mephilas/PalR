@@ -15,7 +15,7 @@ public static class ToolsE
     /// <param name="source">原名</param>
     /// <param name="hundred">百位</param>
     //[UnityEditor.MenuItem("Tools/FileRename")]
-    /*public static void FileRename(string path, string source, string extension = ".bmp", bool hundred = true)
+    public static void FileRename(string path, string source, bool hundred = false, string extension = ".bmp")
     {
         //ToolsE.FileRename("/Resources/Item/", "1");
 
@@ -23,7 +23,7 @@ public static class ToolsE
 
         for (int i = 0; i != 666; i++)
         {
-            oldName = Application.dataPath + path + (i + 1) + "-" + source + extension;
+            oldName = Application.dataPath + path + source + "-" + (i + 1) + extension;
 
             LogWarning(File.Exists(oldName) + " | " + oldName);
 
@@ -38,7 +38,7 @@ public static class ToolsE
             }
             else return;
         }
-    }*/
+    }
 
     /*private ref int SSS { get { return ref _sss; } }
 
@@ -71,20 +71,6 @@ public static class ToolsE
     {
 #if UNITY_EDITOR
         Debug.LogWarning(log);
-#endif
-    }
-
-    public static void LogWarning(string[] logArray)
-    {
-#if UNITY_EDITOR
-        LogWarning(SA2S(logArray));
-#endif
-    }
-
-    public static void LogWarning(int[] logArray)
-    {
-#if UNITY_EDITOR
-        LogWarning(IA2S(logArray));
 #endif
     }
 
@@ -147,6 +133,20 @@ public static class ToolsE
     }
     #endregion
 
+    /// <summary>
+    /// 世界转屏幕
+    /// </summary>
+    /// <param name="position"></param>
+    /// <returns></returns>
+    public static Vector3 W2S(Vector3 position) => CameraController.Camera.WorldToScreenPoint(position);
+
+    /// <summary>
+    /// 随机
+    /// </summary>
+    /// <param name="chance">概率</param>
+    /// <returns></returns>
+    public static bool Random(this int chance) => UnityEngine.Random.Range(0, 100) < chance;
+
     /*/// <summary>
     /// 字符转向量
     /// </summary>
@@ -166,6 +166,23 @@ public static class ToolsE
     /// <param name="data">数据</param>
     /// <returns>整形</returns>
     public static int[] S2IA(this string data, char split = Const.SPLIT_1) => SA2IA(data.Split(split));
+
+    /// <summary>
+    /// 字符转2维整形
+    /// </summary>
+    /// <param name="data">数据</param>
+    /// <returns>整形</returns>
+    public static int[][] S2IAA(this string data, char split0 = Const.SPLIT_1, char split1 = Const.SPLIT_2)
+    {
+        string[] tempSA = data.Split(split0);
+
+        int[][] tempIA = new int[tempSA.Length][];
+
+        for (int i = 0; i != tempSA.Length; i++)
+            tempIA[i] = tempSA[i].S2IA(split1);
+
+        return tempIA;
+    }
 
     /// <summary>
     /// 字符转整形
@@ -245,7 +262,7 @@ public static class ToolsE
     {
         string[] tempSA = data.Split(split_0);
 
-        return new GameEventData(tempSA[0].S2E<GameEventType>(), tempSA[1].Split(split_1));
+        return new(tempSA[0].S2E<GameEventType>(), tempSA[1].Split(split_1));
     }
 
     /// <summary>
@@ -262,6 +279,36 @@ public static class ToolsE
 
         for (int i = 0; i != eventArray.Length; i++)
             eventArray[i] = tempSA[i].S2GE(split_0, split_1);
+
+        return eventArray;
+    }
+
+    /// <summary>
+    /// 字符转角色事件
+    /// </summary>
+    /// <param name="data">数据</param>
+    /// <param name="split_0">切割0</param>
+    /// <returns>角色事件</returns>
+    public static RoleEventData S2RE(this string data, char split = Const.SPLIT_1)
+    {
+        string[] tempSA = data.Split(split);
+
+        return new(tempSA[0].S2E<RoleEffectType>(), int.Parse(tempSA[1]));
+    }
+
+    /// <summary>
+    /// 字符转角色事件集合
+    /// </summary>
+    /// <param name="data">数据</param>
+    /// <param name="split_0">切割</param>
+    /// <returns>角色事件集合</returns>
+    public static RoleEventData[] S2RA(this string data, char split = Const.SPLIT_2)
+    {
+        string[] tempSA = data.Split(Const.SPLIT_0);
+        RoleEventData[] eventArray = new RoleEventData[tempSA.Length];
+
+        for (int i = 0; i != eventArray.Length; i++)
+            eventArray[i] = tempSA[i].S2RE(split);
 
         return eventArray;
     }
@@ -512,6 +559,22 @@ public static class ToolsE
     public static bool Valid<T>(this List<T> list, int index) => 0 <= index && index < list.Count;
 
     /// <summary>
+    /// 随机
+    /// </summary>
+    /// <typeparam name="T"></typeparam>
+    /// <param name="array"></param>
+    /// <returns></returns>
+    public static T Random<T>(this T[] array) => array[UnityEngine.Random.Range(0, array.Length)];
+
+    /// <summary>
+    /// 随机
+    /// </summary>
+    /// <typeparam name="T"></typeparam>
+    /// <param name="list"></param>
+    /// <returns></returns>
+    public static T Random<T>(this List<T> list) => list[UnityEngine.Random.Range(0, list.Count)];
+
+    /// <summary>
     /// Z轴修正，不明原因的所有素材需要垂直拉伸1.2倍，猜测发售前临时修改
     /// </summary>
     /// <param name="origin"></param>
@@ -534,6 +597,13 @@ public static class ToolsE
 
         return origin;
     }
+
+    /// <summary>
+    /// 平面化
+    /// </summary>
+    /// <param name="origin">源</param>
+    /// <returns>向量</returns>
+    public static Vector2 PlanarizationConvert(this Vector3 origin) => new(origin.x, origin.y);
 
     /// <summary>
     /// 透明修改

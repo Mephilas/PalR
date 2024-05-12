@@ -7,11 +7,11 @@ public sealed class InitPanel : UIPanelBase
     {
         base.Awake();
 
-        Invoke(nameof(Begin), 6);
+        Invoke(nameof(Begin), 3);
     }
 
     /// <summary>
     /// 阿伟你又在打电动哦
     /// </summary>
-    private void Begin() => GameManager_.Trigger(new(GameEventType.VideoCG, "0"));
+    private void Begin() => GameManager_.Trigger(GameEventType.VideoCG, "0");
 }

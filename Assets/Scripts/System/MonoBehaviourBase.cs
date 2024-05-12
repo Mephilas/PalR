@@ -93,17 +93,17 @@ public abstract class MonoBehaviourBase : MonoBehaviour
 
     }
 
-    protected virtual void OnTriggerEnter(Collider other)
+    protected virtual void OnTriggerEnter(Collider collider)
     {
         
     }
 
-    protected virtual void OnTriggerStay(Collider other)
+    protected virtual void OnTriggerStay(Collider collider)
     {
 
     }
 
-    protected virtual void OnTriggerExit(Collider other)
+    protected virtual void OnTriggerExit(Collider collider)
     {
 
     }

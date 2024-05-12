@@ -53,29 +53,19 @@ public sealed class BattleField : SingletonBase<BattleField>
     public static readonly List<BattleRole> PlayerList = new();
 
     /// <summary>
-    /// 玩家存活数
-    /// </summary>
-    private static int _playerAliveCount;
-
-    /// <summary>
     /// 敌人集合
     /// </summary>
     public static readonly List<BattleRole> HostileList = new();
 
     /// <summary>
-    /// 敌人存活数
+    /// 击败敌人集合
     /// </summary>
-    private static int _hostileAliveCount;
-
-    /// <summary>
-    /// 战斗行动集合
-    /// </summary>
-    private static readonly Dictionary<BattleRole, BattleAction> _battleActionDic = new();
+    public static readonly List<BattleRole> BeatHostileList = new();
 
     /// <summary>
     /// 战斗行动角色集合
     /// </summary>
-    private static readonly List<BattleRole> _battleActionList = new();
+    private static readonly List<BattleAction> _battleActionList = new();
 
     /// <summary>
     /// 部署序号
@@ -85,7 +75,7 @@ public sealed class BattleField : SingletonBase<BattleField>
     /// <summary>
     /// 行动角色
     /// </summary>
-    private static BattleRole _actionRole;
+    private static BattleAction _action;
 
     /// <summary>
     /// 决策
@@ -93,9 +83,14 @@ public sealed class BattleField : SingletonBase<BattleField>
     public static UnityAction PlayerDecide { get; set; }
 
     /// <summary>
-    /// 行动开始
+    /// 行动阶段开始
     /// </summary>
-    public static UnityAction ActionStart { get; set; }
+    public static UnityAction ActionStageStart { get; set; }
+
+    /// <summary>
+    /// 行动阶段结束
+    /// </summary>
+    public static UnityAction ActionStageEnd { get; set; }
 
     /// <summary>
     /// 行动结束
@@ -103,14 +98,33 @@ public sealed class BattleField : SingletonBase<BattleField>
     public static UnityAction ActionEnd { get; set; }
 
     /// <summary>
+    /// UI伤害显示
+    /// </summary>
+    public static System.Func<UIDamage> UIDamageDisplay { get; set; }
+
+    /// <summary>
     /// AI战斗开关，代替神奇的围攻
     /// </summary>
     public static bool AISwitch { get; set; }
 
     /// <summary>
-    /// 特效
+    /// 特效备用集合
     /// </summary>
+    private static readonly List<SpriteRenderer> _effectReserveList = new(6);
+
+    /// <summary>
+    /// 特效使用集合
+    /// </summary>
+    private static readonly List<SpriteRenderer> _effectUsingList = new(6);
+
+    /// <summary>
+    /// 特效回收集合
+    /// </summary>
+    private static readonly List<SpriteRenderer> _effectCollectList = new(6);
+
     private static SpriteRenderer _effect;
+
+    private static bool _pause;
 
     private static Vector2[] _tempVA;
 
@@ -122,8 +136,6 @@ public sealed class BattleField : SingletonBase<BattleField>
 
         GC(ref _battleField);
 
-        CGC(ref _effect, "Effect");
-
         Hide();
     }
 
@@ -133,9 +145,6 @@ public sealed class BattleField : SingletonBase<BattleField>
     /// <param name="battleData">战斗数据</param>
     private void BattleBegin(string[] battleData)
     {
-        PlayerList.Clear();
-        HostileList.Clear();
-
         Transform.localPosition = Vector3.forward;
 
         for (int i = 0; i != GameManager_.PlayerList.Count; i++)
@@ -143,7 +152,7 @@ public sealed class BattleField : SingletonBase<BattleField>
             PlayerList.Add(DataManager_.Instance.RoleCreate<BattleRole>(GameManager_.PlayerList[i].RoleData, Transform));
         }
 
-        _tempVA = PLAYER_POSITION_ARRAY[PlayerList.Count - 1];
+        _tempVA = PLAYER_POSITION_ARRAY[PlayerList.Last()];
         for (int i = 0; i != _tempVA.Length; i++)
         {
             PlayerList[i].BattleInit(_tempVA[i], GameManager_.PlayerList[i]);
@@ -155,7 +164,7 @@ public sealed class BattleField : SingletonBase<BattleField>
             HostileList.Add(DataManager_.Instance.RoleCreate<BattleRole>(GameManager_.RoleList[_battleRole.RoleData.BattleIDGroup[i]].RoleData, Transform));
         }
 
-        _tempVA = HOSTILE_POSITION_ARRAY[HostileList.Count - 1];
+        _tempVA = HOSTILE_POSITION_ARRAY[HostileList.Last()];
         for (int i = 0; i != _tempVA.Length; i++)
         {
             HostileList[i].BattleInit(_tempVA[i]);
@@ -164,22 +173,22 @@ public sealed class BattleField : SingletonBase<BattleField>
         _battleField.sprite = DataManager_.BattleGroundArray[GameManager_.BattleGroundID];
         _battleField.color = Const.CLEAR;
         _battleField.DOFade(1, BG_FADE_DURATION);
-        GameManager_.Trigger(new GameEventData(GameEventType.BGPlay, _battleRole.RoleData.BattleBG));
-        GameManager_.Trigger(new GameEventData(GameEventType.UIPanel, UIPanel.BattlePanel.ToString()));
+        GameManager_.Trigger(GameEventType.BGPlay, _battleRole.RoleData.BattleBG);
+        GameManager_.Trigger(GameEventType.UIPanel, UIPanel.BattlePanel.ToString());
+        if (-1 != _battleRole.RoleData.BattleDialogue)
+            GameManager_.Trigger(GameEventType.Dialogue, _battleRole.RoleData.BattleDialogue.ToString());
 
-        StartCoroutine(nameof(BattleI));
+        StartCoroutine(nameof(BattleC));
     }
 
     /// <summary>
-    /// 战斗协程
+    /// 战斗
     /// </summary>
     /// <returns></returns>
-    private System.Collections.IEnumerator BattleI()
+    private System.Collections.IEnumerator BattleC()
     {
-        while (PlayerAliveCheck() && HostileAliveCheck())
+        while (true)
         {
-            yield return null;
-
             ToolsE.LogWarning("  Deploy");
 
             for (int i = 0; i != PlayerList.Count; i++)
@@ -188,10 +197,8 @@ public sealed class BattleField : SingletonBase<BattleField>
             if (AISwitch) AIDeploy();
             else
             {
-                while (-1 != PlayerDeploy())
+                while (PlayerDeploy())
                 {
-                    yield return null;
-
                     if (AISwitch)
                     {
                         AIDeploy();
@@ -207,64 +214,76 @@ public sealed class BattleField : SingletonBase<BattleField>
             }
 
             for (int i = 0; i != HostileList.Count; i++)
-                if (HostileList[i].IsAlive) _battleActionDic.Add(HostileList[i], HostileList[i].HostileAction());
+                if (HostileList[i].IsAlive) HostileList[i].HostileAction();
 
+            _battleActionList.Sort();
+            ActionStageStart();
             ToolsE.LogWarning("  Action");
-
-            BattleSort();
-            ActionStart();
-
             while (0 != _battleActionList.Count)
             {
-                yield return null;
-
                 RoleAction();
 
-                while (_actionRole.Actioning)
+                while (_action.ActionRole.Actioning)
                     yield return Const.WAIT_FOR_HS;
+
+                ActionEnd();
+
+                if (AliveCheck(false))
+                {
+                    GameManager_.Trigger(GameEventType.BGPlay, "-1");
+                    //GameManager_.Trigger(new(GameEventType.SoundEffects, ""));
+                    GameManager_.Trigger(GameEventType.UIPanel, UIPanel.SettlementPanel.ToString());
+
+                    StopCoroutine(nameof(BattleC));
+                }
+                else if (AliveCheck(true))
+                {
+                    _pause = true;
+
+                    _battleActionList.Clear();
+
+                    GameManager_.Trigger(GameEventType.BGPlay, "-1");
+                    //GameManager_.Trigger(new(GameEventType.SoundEffects, ""));
+                    GameManager_.Trigger(GameEventType.UIPanel, UIPanel.GGPanel.ToString());
+
+                    while (_pause) yield return Const.WAIT_FOR_2S;
+                }
             }
 
-            _battleActionDic.Clear();
             _battleActionList.Clear();
 
-            ActionEnd();
+            ActionStageEnd();
         }
-
-        ToolsE.LogWarning("  BattleSettlement");
-
-        BattleSettlement();
     }
 
     /// <summary>
-    /// 玩家存活检查
+    /// 存活检查
     /// </summary>
-    private static bool PlayerAliveCheck()
+    private static bool AliveCheck(bool player)
     {
-        _playerAliveCount = 0;
+        List<BattleRole> roleList = player ? PlayerList : HostileList;
 
+        for (int i = 0; i != roleList.Count; i++)
+        {
+            if (roleList[i].IsAlive)
+                return false;
+        }
+
+        return true;
+    }
+
+    /// <summary>
+    /// 复活
+    /// </summary>
+    public static void Resurrect()
+    {
         for (int i = 0; i != PlayerList.Count; i++)
-        {
-            if (PlayerList[i].IsAlive)
-                _playerAliveCount++;
-        }
+            PlayerList[i].Resurrect();
 
-        return 0 != _playerAliveCount;
-    }
+        GameManager_.Trigger(GameEventType.BGPlay, "-2");
+        GameManager_.Trigger(GameEventType.UIPanel, UIPanel.BattlePanel.ToString());
 
-    /// <summary>
-    /// 敌人存活检查
-    /// </summary>
-    private static bool HostileAliveCheck()
-    {
-        _hostileAliveCount = 0;
-
-        for (int i = 0; i != HostileList.Count; i++)
-        {
-            if (HostileList[i].IsAlive)
-                _hostileAliveCount++;
-        }
-
-        return 0 != _hostileAliveCount;
+        _pause = false;
     }
 
     /// <summary>
@@ -273,22 +292,26 @@ public sealed class BattleField : SingletonBase<BattleField>
     private static void AIDeploy()
     {
         for (int i = 0; i != PlayerList.Count; i++)
-            if (PlayerList[i].IsAlive) _battleActionDic.Add(PlayerList[i], PlayerList[i].HostileAction());
+            if (PlayerList[i].IsAlive) PlayerList[i].AIAction();
     }
 
     /// <summary>
-    /// 玩家部署
+    /// 玩家未部署
     /// </summary>
-    /// <returns>是否</returns>
-    private static int PlayerDeploy()
+    /// <returns>是/否</returns>
+    private static bool PlayerDeploy()
     {
         for (int i = 0; i != PlayerList.Count; i++)
         {
-            if (!PlayerList[i].Deployed)
-                return DecideIndex = i;
+            if (RoleBattleState.Decease != PlayerList[i].BattleState && !PlayerList[i].Deployed)
+            {
+                DecideIndex = i;
+
+                return true;
+            }
         }
 
-        return DecideIndex = -1;
+        return false;
     }
 
     /// <summary>
@@ -296,9 +319,40 @@ public sealed class BattleField : SingletonBase<BattleField>
     /// </summary>
     public static void Confirm(BattleAction battleAction)
     {
-        _battleActionDic.Add(PlayerList[DecideIndex], battleAction);
+        if (BattleActionType.JointAttack == battleAction.ActionType)
+        {
+            for (int i = 0; i != _battleActionList.Count; i++)
+            {
+                if (null != _battleActionList[i].ActionRole.RoleEntity)
+                    _battleActionList.RemoveAt(i--);
+            }
 
-        PlayerList[DecideIndex].Deployed = true;
+            for (int i = 0; i != PlayerList.Count; i++) PlayerList[i].Deployed = true;
+        }
+
+        _battleActionList.Add(battleAction);
+
+        battleAction.ActionRole.Deployed = true;
+    }
+
+    /// <summary>
+    /// 角色死亡
+    /// </summary>
+    /// <param name="role">角色</param>
+    /// <param name="isHostile">敌/我</param>
+    public static void RoleDecease(BattleRole role, bool isHostile)
+    {
+        for (int i = 0; i != _battleActionList.Count; i++)
+        {
+            if (_battleActionList[i].ActionRole == role)
+                _battleActionList.RemoveAt(i--);
+        }
+
+        if (isHostile)
+        {
+            HostileList.Remove(role);
+            BeatHostileList.Add(role);
+        }
     }
 
     /// <summary>
@@ -308,21 +362,17 @@ public sealed class BattleField : SingletonBase<BattleField>
     {
         if (0 != DecideIndex)
         {
-            _battleActionDic.Remove(PlayerList[DecideIndex--]);
+            --DecideIndex;
 
+            for (int i = 0; i != _battleActionList.Count; i++)
+            {
+                if (_battleActionList[i].ActionRole == PlayerList[DecideIndex])
+                    _battleActionList.RemoveAt(i--);
+            }
+
+            PlayerList[DecideIndex].Deployed = false;
             PlayerDecide();
         }
-    }
-
-    /// <summary>
-    /// 战斗排序
-    /// </summary>
-    private static void BattleSort()
-    {
-        foreach (BattleRole battleRole in _battleActionDic.Keys)
-            _battleActionList.Add(battleRole);
-
-        _battleActionList.Sort();
     }
 
     /// <summary>
@@ -330,9 +380,9 @@ public sealed class BattleField : SingletonBase<BattleField>
     /// </summary>
     private static void RoleAction()
     {
-        (_actionRole = _battleActionList[0]).Action(_battleActionDic[_actionRole]);
+        (_action = _battleActionList[^1]).ActionRole.Action(_action);
 
-        _battleActionList.RemoveAt(0);
+        _battleActionList.RemoveAt(_battleActionList.Last());
     }
 
     /// <summary>
@@ -340,7 +390,7 @@ public sealed class BattleField : SingletonBase<BattleField>
     /// </summary>
     public static void AIBattle()
     {
-        GameManager_.Trigger(new GameEventData(GameEventType.UIPanel, UIPanel.BattlePanel.ToString()));
+        GameManager_.Trigger(GameEventType.UIPanel, UIPanel.BattlePanel.ToString());
 
         AISwitch = true;
     }
@@ -350,9 +400,9 @@ public sealed class BattleField : SingletonBase<BattleField>
     /// </summary>
     public static void Defense()
     {
-        Confirm(new(BattleActionType.Defense));
+        PlayerList[DecideIndex].Deployed = PlayerList[DecideIndex].Defensing = true;
 
-        GameManager_.Trigger(new GameEventData(GameEventType.UIPanel, UIPanel.BattlePanel.ToString()));
+        GameManager_.Trigger(GameEventType.UIPanel, UIPanel.BattlePanel.ToString());
     }
 
     /// <summary>
@@ -361,27 +411,66 @@ public sealed class BattleField : SingletonBase<BattleField>
     public static void RunForYourLife()
     {
         for (int i = 0; i != PlayerList.Count; i++)
-            Confirm(new(BattleActionType.Retreat));
-    }
+        {
+            PlayerList[DecideIndex].Defensing = true;
 
-    /// <summary>
-    /// 战斗结算
-    /// </summary>
-    private void BattleSettlement()
-    {
-        GameManager_.Trigger(new GameEventData(GameEventType.BGPlay, "-1"));
+            Confirm(new(PlayerList[i], BattleActionType.Retreat));
+        }
 
-        _battleField.DOFade(0, BG_FADE_DURATION).onComplete = BattleEnd;
+        GameManager_.Trigger(GameEventType.UIPanel, UIPanel.BattlePanel.ToString());
     }
 
     /// <summary>
     /// 胜负已分
     /// </summary>
-    private void BattleEnd()
+    public void BattleEnd(bool retreat = false)
     {
-        Hide();
-        GameManager_.Trigger(new GameEventData(GameEventType.BGRecover));
-        GameManager_.Trigger(new GameEventData(GameEventType.UIPanel, UIPanel.BasicPanel.ToString()));
+        _battleField.DOFade(0, BG_FADE_DURATION).onComplete = () =>
+        {
+            for (int i = 0; i != PlayerList.Count; i++) Destroy(PlayerList[i].gameObject);
+            for (int i = 0; i != HostileList.Count; i++) Destroy(HostileList[i].gameObject);
+            PlayerList.Clear();
+            HostileList.Clear();
+            BeatHostileList.Clear();
+            GameManager_.Trigger(GameEventType.BGRecover);
+
+            if (-1 == _battleRole.RoleData.BeatDialogue)
+                GameManager_.Trigger(GameEventType.UIPanel, UIPanel.BasicPanel.ToString());
+            else if (!retreat)
+                GameManager_.Trigger(GameEventType.Dialogue, _battleRole.RoleData.BeatDialogue.ToString());
+
+            for (int i = 0; i != _effectUsingList.Count; i++)
+                _effectCollectList.Add(_effectUsingList[i]);
+
+            for (int i = 0; i != _effectCollectList.Count; i++)
+            {
+                _effectUsingList.Remove(_effectCollectList[i]);
+                _effectReserveList.Add(_effectCollectList[i]);
+            }
+
+            _effectCollectList.Clear();
+
+            Hide();
+        };
+    }
+
+    /// <summary>
+    /// 特效获取
+    /// </summary>
+    /// <returns>特效</returns>
+    public static SpriteRenderer EffectGet()
+    {
+        if (0 == _effectReserveList.Count)
+            _effect = Instantiate(Resources.Load<GameObject>("Prefabs/SkillEffect"), Transform).GetComponent<SpriteRenderer>();
+        else
+        {
+            _effect = _effectReserveList[^1];
+            _effectReserveList.RemoveAt(_effectReserveList.Last());
+        }
+
+        _effectUsingList.Add(_effect);
+
+        return _effect;
     }
 }
 
@@ -389,8 +478,13 @@ public sealed class BattleField : SingletonBase<BattleField>
 /// <summary>
 /// 战斗行动
 /// </summary>
-public sealed class BattleAction
+public sealed class BattleAction : System.IComparable<BattleAction>
 {
+    /// <summary>
+    /// 行动角色
+    /// </summary>
+    public readonly BattleRole ActionRole;
+
     /// <summary>
     /// 战斗行动类型
     /// </summary>
@@ -406,15 +500,53 @@ public sealed class BattleAction
     /// </summary>
     public readonly BattleRole Target;
 
-    public BattleAction(BattleActionType actionType, int sourceID = -1)
+    public int CompareTo(BattleAction battleAction) => Speed(battleAction) < Speed(this) ? 1 : -1;
+
+    private float Speed(BattleAction battleAction)
     {
+        float speed;
+
+        if (BattleActionType.JointAttack == battleAction.ActionType)
+        {
+            speed = 10;
+        }
+        else if (BattleActionType.Defense == battleAction.ActionType)
+        {
+            speed = 5;
+        }
+        else if (BattleActionType.Item == battleAction.ActionType
+            || null == battleAction.ActionRole.RoleEntity && BattleActionType.Skill == battleAction.ActionType
+            || null != battleAction.ActionRole.RoleEntity && BattleActionType.Skill == battleAction.ActionType && !DataManager_.SkillDataArray[battleAction.SourceID].Attack)
+        {
+            speed = 3;
+        }
+        else if (BattleActionType.Retreat == battleAction.ActionType)
+        {
+            speed = 2;
+        }
+        else speed = 1;
+        
+        speed *= battleAction.ActionRole.Speed * Random.Range(0.9f, 1.1f);
+        //还缺仙风云体术速度*3
+        if (battleAction.ActionRole.HP * 5 < battleAction.ActionRole.HPMax)
+            speed *= 0.5f;
+        //ToolsE.LogWarning(battleAction.ActionRole.name + "  " + battleAction.ActionRole.Speed + "  " + speed);
+        return speed;
+    }
+
+    public BattleAction(BattleRole actionRole, BattleActionType actionType, int sourceID = -1)
+    {
+        ActionRole = actionRole;
+
         ActionType = actionType;
 
         SourceID = sourceID;
     }
 
-    public BattleAction(BattleActionType actionType, int sourceID, BattleRole target = null)
+    public BattleAction(BattleRole actionRole, BattleActionType actionType, int sourceID, BattleRole target = null)
     {
+        ActionRole = actionRole;
+
         ActionType = actionType;
 
         SourceID = sourceID;
@@ -437,12 +569,7 @@ public enum BattleActionType
     /// <summary>
     /// 围攻，make a really big fucking hole !
     /// </summary>
-    Siege,
-
-    /// <summary>
-    /// 自动战斗
-    /// </summary>
-    Auto,
+    //Siege,
 
     /// <summary>
     /// 道具使用/投掷
@@ -460,7 +587,7 @@ public enum BattleActionType
     Retreat,
 
     /// <summary>
-    /// 技能施放
+    /// 仙术施放
     /// </summary>
     Skill,
 

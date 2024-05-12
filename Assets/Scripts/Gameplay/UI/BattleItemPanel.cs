@@ -94,7 +94,7 @@ public sealed class BattleItemPanel : UIPanelBase
         CGC(ref _description, "Description");
     }
 
-    protected override void Escape() => GameManager_.Trigger(new(GameEventType.UIPanel, UIPanel.BattleExtensionPanel.ToString()));
+    protected override void Escape() => GameManager_.Trigger(GameEventType.UIPanel, UIPanel.BattleExtensionPanel.ToString());
 
     protected override void Enter() => _selectorArray[_currentIndex].Selected();
 
@@ -164,14 +164,14 @@ public sealed class BattleItemPanel : UIPanelBase
                 ItemData item = DataManager_.ItemDataArray[itemID];
                 _selectorArray[index].Init(() => Select(index), () =>
                 {
-                    if (SelectItem.Throw || -1 != SelectItem.SellPrice && !SelectItem.Outfit)
+                    if (SelectItem.Throw || -1 != SelectItem.EffectSkillID)
                     {
-                        GameManager_.Trigger(new(GameEventType.UIPanel, new string[] { UIPanel.BattlePanel.ToString(), "True", SelectItem.ID.ToString(), "False" }));
+                        GameManager_.Trigger(GameEventType.UIPanel, UIPanel.BattlePanel.ToString(), "True", SelectItem.ID.ToString(), "False");
                     }
                     else
                     {
                         //GameManager_.Trigger(new(GameEventType.UIPanel, UIPanel.BattleExtensionPanel.ToString()));
-                        GameManager_.Trigger(new(GameEventType.Tip, "46"));
+                        GameManager_.Trigger(GameEventType.Tip, "46");
                     }
                 }, item.Name, item.ID, index, GameManager_.Bag[itemID]);
             }

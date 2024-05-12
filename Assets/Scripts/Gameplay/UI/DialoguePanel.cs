@@ -10,7 +10,7 @@ public sealed class DialoguePanel : UIPanelBase
     /// <summary>
     /// 台词面板事件
     /// </summary>
-    private static readonly GameEventData DIALOGUE_PANEL_EVENT = new(GameEventType.UIPanel, UIPanel.DialoguePanel.ToString());
+    private static readonly GameEventData DIALOGUE_PANEL_EVENT = new(GameEventType.UIPanel, UIPanel.DialoguePanel.ToString(), "False");
 
     /// <summary>
     /// 角色头像Image
@@ -105,14 +105,14 @@ public sealed class DialoguePanel : UIPanelBase
 
         _dialoguePlaySpeed = _dialogueData.AutoPlay ? Const.DIALOGUE_SLOW_PLAY_SPEED : Const.DIALOGUE_PLAY_SPEED;
 
-        StartCoroutine(nameof(DialoguePlay));
+        StartCoroutine(nameof(DialoguePlayC));
     }
 
     /// <summary>
     /// 台词播放
     /// </summary>
     /// <returns></returns>
-    private IEnumerator DialoguePlay()
+    private IEnumerator DialoguePlayC()
     {
         for (int i = 0; i != _dialogueData.DialogueText.Length; i++)
         {
@@ -135,12 +135,12 @@ public sealed class DialoguePanel : UIPanelBase
     /// </summary>
     private void DialogueEnd()
     {
-        StopCoroutine(nameof(DialoguePlay));
+        StopCoroutine(nameof(DialoguePlayC));
 
         _stringBuilder.Clear();
         _isDialogueEnd = false;
 
-        GameManager_.Trigger(new(GameEventType.MissionUpdate, new string[] { MissionType.Dialogue.ToString(), _dialogueData.ID.ToString() }));
+        GameManager_.Trigger(GameEventType.MissionUpdate, MissionType.Dialogue.ToString(), _dialogueData.ID.ToString());
 
         if (null == _dialogueData.EventArray)
             GameManager_.Trigger(BASIC_PANEL_EVENT);

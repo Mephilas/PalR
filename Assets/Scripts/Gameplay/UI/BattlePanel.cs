@@ -1,4 +1,5 @@
 using UnityEngine;
+using System.Collections.Generic;
 
 /// <summary>
 /// 战斗面板
@@ -53,12 +54,12 @@ public sealed class BattlePanel : UIPanelBase
     /// <summary>
     /// 角色决策动画
     /// </summary>
-    private static UIDecideAnim _decideAnim;
-
+    private static BattleSelector _decideAnim;
+    
     /// <summary>
     /// 队友选择动画
     /// </summary>
-    private static UIDecideAnim _selectAnim;
+    private static BattleSelector _selectAnim;
 
     /// <summary>
     /// 全屏遮罩
@@ -98,7 +99,24 @@ public sealed class BattlePanel : UIPanelBase
     /// <summary>
     /// 选择队列，敌我
     /// </summary>
-    private static System.Collections.Generic.List<BattleRole> _selectRoleList;
+    private static List<BattleRole> _selectRoleList;
+
+    /// <summary>
+    /// UI伤害备用集合
+    /// </summary>
+    private static readonly List<UIDamage> _uiDamageReserveList = new(6);
+
+    /// <summary>
+    /// UI伤害使用集合
+    /// </summary>
+    private static readonly List<UIDamage> _uiDamageUsingList = new(6);
+
+    /// <summary>
+    /// UI伤害回收集合
+    /// </summary>
+    private static readonly List<UIDamage> _uiDamageCollectList = new(6);
+
+    private static UIDamage _uiDamage;
 
     /// <summary>
     /// 合击检查
@@ -111,7 +129,7 @@ public sealed class BattlePanel : UIPanelBase
 
             for (int i = 0; i != BattleField.PlayerList.Count; i++)
             {
-                if (BattleField.PlayerList[i].HP * 30 <= BattleField.PlayerList[i].HP)
+                if (BattleField.PlayerList[i].HP * 5 < BattleField.PlayerList[i].HPMax)
                     return false;
             }
 
@@ -137,8 +155,6 @@ public sealed class BattlePanel : UIPanelBase
     /// </summary>
     protected override void Escape()
     {
-        _selectRoleList[_targetIndex].HostileSelect(false);
-
         if (_selecting) ExitSelect();
         else BattleField.Rollback();
 
@@ -163,7 +179,7 @@ public sealed class BattlePanel : UIPanelBase
     /// </summary>
     protected override void Up()
     {
-        if (_selecting) RoleSelect(0 == _targetIndex ? _selectRoleList.Last() : 0);
+        if (_selecting) RoleSelect(0 == _targetIndex ? _selectRoleList.Last() : 0, false);
         else Select(0);
     }
 
@@ -172,7 +188,7 @@ public sealed class BattlePanel : UIPanelBase
     /// </summary>
     protected override void Down()
     {
-        if (_selecting) RoleSelect(_selectRoleList.Last() == _targetIndex ? 0 : _selectRoleList.Last());
+        if (_selecting) RoleSelect(_selectRoleList.Last() == _targetIndex ? 0 : _selectRoleList.Last(), true);
         else Select(1);
     }
 
@@ -181,7 +197,7 @@ public sealed class BattlePanel : UIPanelBase
     /// </summary>
     protected override void Left()
     {
-        if (_selecting) RoleSelect(0 == _targetIndex ? _selectRoleList.Last() : _targetIndex - 1);
+        if (_selecting) RoleSelect(0 == _targetIndex ? _selectRoleList.Last() : _targetIndex - 1, false);
         else Select(2);
     }
 
@@ -190,7 +206,7 @@ public sealed class BattlePanel : UIPanelBase
     /// </summary>
     protected override void Right()
     {
-        if (_selecting) RoleSelect(_selectRoleList.Last() == _targetIndex ? 0 : _targetIndex + 1);
+        if (_selecting) RoleSelect(_selectRoleList.Last() == _targetIndex ? 0 : _targetIndex + 1, true);
         else if (JointAttackCheck) Select(3);
     }
 
@@ -199,8 +215,10 @@ public sealed class BattlePanel : UIPanelBase
         base.Start();
 
         BattleField.PlayerDecide = PlayerDecide;
-        BattleField.ActionStart = ActionStart;
+        BattleField.ActionStageStart = ActionStageStart;
+        BattleField.ActionStageEnd = ActionStageEnd;
         BattleField.ActionEnd = ActionEnd;
+        BattleField.UIDamageDisplay = UIDamageDisplay;
 
         for (int i = 0; i != _selectorArray.Length; i++)
         {
@@ -219,17 +237,23 @@ public sealed class BattlePanel : UIPanelBase
     /// <summary>
     /// 普通攻击
     /// </summary>
-    private static void NormalAttack() => TargetSelect(BattleActionType.NormalAttack);
+    private static void NormalAttack()
+    {
+        if (DataManager_.ItemDataArray[DecidePlayer.RoleEntity.OutfitDic[OutfitType.Weapon]].Ranged)
+            BattleField.Confirm(new(DecidePlayer, BattleActionType.NormalAttack));
+        else
+            TargetSelect(BattleActionType.NormalAttack);
+    }
 
     /// <summary>
     /// 扩展
     /// </summary>
-    private static void Extension() => GameManager_.Trigger(new(GameEventType.UIPanel, new string[] { UIPanel.BattleExtensionPanel.ToString(), "False" }));
+    private static void Extension() => GameManager_.Trigger(GameEventType.UIPanel, UIPanel.BattleExtensionPanel.ToString(), "False");
 
     /// <summary>
     /// 仙术
     /// </summary>
-    private static void Skill() => GameManager_.Trigger(new(GameEventType.UIPanel, new string[] { UIPanel.BattleSkillPanel.ToString(), "False", BattleField.DecideIndex.ToString() }));
+    private static void Skill() => GameManager_.Trigger(GameEventType.UIPanel, UIPanel.BattleSkillPanel.ToString(), "False", BattleField.DecideIndex.ToString());
 
     /// <summary>
     /// 合击
@@ -240,7 +264,7 @@ public sealed class BattlePanel : UIPanelBase
 
         if (DecidePlayer.JointSkill.Effect2All)
         {
-            BattleField.Confirm(new(BattleActionType.JointAttack, _selectSourceID));
+            BattleField.Confirm(new(DecidePlayer, BattleActionType.JointAttack, _selectSourceID));
 
             for (int i = 0; i != BattleField.PlayerList.Count; i++)
                 BattleField.PlayerList[i].Deployed = true;
@@ -257,7 +281,7 @@ public sealed class BattlePanel : UIPanelBase
     private static void PlayerDecide()
     {
         _decideT.anchoredPosition = Vector2.zero;
-        _decideAnim.Display(CameraController.Camera.WorldToScreenPoint(DecidePlayer.Transform.position), DEPLOY_ANIM_P, DEPLOY_COLOR_0, DEPLOY_COLOR_1);
+        _decideAnim.Display(ToolsE.W2S(DecidePlayer.Transform.position), DEPLOY_ANIM_P, DEPLOY_COLOR_0, DEPLOY_COLOR_1);
         Select(0);
     }
 
@@ -276,14 +300,15 @@ public sealed class BattlePanel : UIPanelBase
 
         _selectRoleList = selectHostile ? BattleField.HostileList : BattleField.PlayerList;
 
-        RoleSelect(0);
+        RoleSelect(0, true);
     }
 
     /// <summary>
     /// 角色选择
     /// </summary>
     /// <param name="index">序号</param>
-    private static void RoleSelect(in int index)
+    /// <returns>存活</returns>
+    private static void RoleSelect(in int index, bool direction)
     {
         if (BattleField.HostileList == _selectRoleList)
         {
@@ -292,7 +317,16 @@ public sealed class BattlePanel : UIPanelBase
         }
         else
         {
-            _selectAnim.Display(CameraController.Camera.WorldToScreenPoint(_selectRoleList[_targetIndex = index].Transform.position), SELECT_ANIM_P, SELECT_COLOR_0, SELECT_COLOR_1);
+            _targetIndex = index;
+
+            while (RoleBattleState.Decease == _selectRoleList[_targetIndex].BattleState)
+            {
+                _targetIndex += direction ? 1 : -1;
+                if (_selectRoleList.Count == _targetIndex) _targetIndex = 0;
+                else if (-1 == _targetIndex) _targetIndex = _selectRoleList.Last();
+            }
+
+            _selectAnim.Display(ToolsE.W2S(_selectRoleList[_targetIndex].Transform.position), SELECT_ANIM_P, SELECT_COLOR_0, SELECT_COLOR_1);
         }
     }
 
@@ -302,7 +336,7 @@ public sealed class BattlePanel : UIPanelBase
     private static void ExitSelect()
     {
         _selecting = false;
-
+        _selectRoleList[_targetIndex].HostileSelect(false);
         _decideT.anchoredPosition = Vector2.zero;
     }
 
@@ -313,7 +347,7 @@ public sealed class BattlePanel : UIPanelBase
     {
         _selectRoleList[_targetIndex].HostileSelect(false);
 
-        BattleField.Confirm(new(_selectType, _selectSourceID, _selectRoleList[_targetIndex]));
+        BattleField.Confirm(new(DecidePlayer, _selectType, _selectSourceID, _selectRoleList[_targetIndex]));
 
         _targetIndex = -1;
 
@@ -321,9 +355,9 @@ public sealed class BattlePanel : UIPanelBase
     }
 
     /// <summary>
-    /// 行动开始
+    /// 行动阶段开始
     /// </summary>
-    private void ActionStart()
+    private void ActionStageStart()
     {
         InputSwitch = false;
 
@@ -335,15 +369,62 @@ public sealed class BattlePanel : UIPanelBase
     }
 
     /// <summary>
-    /// 行动结束
+    /// 行动阶段结束
     /// </summary>
-    private void ActionEnd()
+    private void ActionStageEnd()
     {
         InputSwitch = true;
 
         UIHide(_maskT);
         UIDisplay(_decideT);
         UIDisplay(_playerT);
+
+        if (JointAttackCheck) _selectorArray[^1].Effect(false);
+        else _selectorArray[^1].Effect();
+    }
+
+    /// <summary>
+    /// 行动结束
+    /// </summary>
+    private void ActionEnd()
+    {
+        for (int i = 0; i != GameManager_.PlayerList.Count; i++)
+            _playerArray[i].Refresh();
+
+        for (int i = 0; i != _uiDamageUsingList.Count; i++)
+        {
+            if (!_uiDamageUsingList[i].Floating)
+                _uiDamageCollectList.Add(_uiDamageUsingList[i]);
+
+            //i--;
+        }
+
+        for (int i = 0; i != _uiDamageCollectList.Count; i++)
+        {
+            _uiDamageUsingList.Remove(_uiDamageCollectList[i]);
+            _uiDamageReserveList.Add(_uiDamageCollectList[i]);
+        }
+
+        _uiDamageCollectList.Clear();
+    }
+
+    /// <summary>
+    /// UI伤害显示
+    /// </summary>
+    /// <returns></returns>
+    private UIDamage UIDamageDisplay()
+    {
+        if (0 == _uiDamageReserveList.Count)
+            _uiDamage = Instantiate(Resources.Load<GameObject>("Prefabs/" + nameof(UIDamage)), Transform).GetComponent<UIDamage>();
+        else
+        {
+            _uiDamage = _uiDamageReserveList[^1];
+            _uiDamageReserveList.RemoveAt(_uiDamageReserveList.Last());
+        }
+
+        _uiDamageUsingList.Add(_uiDamage);
+
+        return _uiDamage;
     }
 
     public override void Active(string[] argumentArray = null)
@@ -356,16 +437,16 @@ public sealed class BattlePanel : UIPanelBase
         if (!JointAttackCheck)
             _selectorArray[^1].Effect();
 
-        Select(_currentIndex);
+        Select(0);
 
         for (int i = 0; i != _playerArray.Length; i++)
             _playerArray[i].Hide();
 
-        for (int i = 0; i != GameManager_.PlayerList.Count; i++)
+        for (int i = 0; i != BattleField.PlayerList.Count; i++)
         {
             int index = i;
 
-            _playerArray[index].Init(GameManager_.PlayerList[index]);
+            _playerArray[index].Init(BattleField.PlayerList[index]);
         }
 
         if (2 < argumentArray.Length)
@@ -374,11 +455,11 @@ public sealed class BattlePanel : UIPanelBase
             bool _skillOrItem = bool.Parse(argumentArray[3]);
             bool _effect2All = _skillOrItem ? DataManager_.SkillDataArray[_selectSourceID].Effect2All : DataManager_.ItemDataArray[_selectSourceID].Effect2All;
             BattleActionType _battleActionType = _skillOrItem ? BattleActionType.Skill : BattleActionType.Item;
-            bool _selectHostile = _skillOrItem ? DataManager_.SkillDataArray[_selectSourceID].Value < 0 : DataManager_.ItemDataArray[_selectSourceID].Throw;
+            bool _selectHostile = _skillOrItem ? DataManager_.SkillDataArray[_selectSourceID].Attack : DataManager_.ItemDataArray[_selectSourceID].Throw;
 
             if (_effect2All)
             {
-                BattleField.Confirm(new(_battleActionType, _selectSourceID));
+                BattleField.Confirm(new(DecidePlayer, _battleActionType, _selectSourceID));
             }
             else
             {

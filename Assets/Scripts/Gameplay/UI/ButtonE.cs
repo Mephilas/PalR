@@ -12,7 +12,7 @@ public sealed class ButtonE : UIBase_, IPointerDownHandler, IPointerUpHandler, I
     /// <summary>
     /// 音效事件
     /// </summary>
-    private static readonly GameEventData BUTTON_AUDIO_EVENT = new(GameEventType.ButtonAudio, string.Empty);
+    private static readonly GameEventData BUTTON_AUDIO_EVENT = new(GameEventType.ButtonAudio);
 
     /// <summary>
     /// 缩放尺寸
@@ -54,7 +54,7 @@ public sealed class ButtonE : UIBase_, IPointerDownHandler, IPointerUpHandler, I
         {
             _do = RectT.DOScale(SCALE, SCALE_DURATION);
             GameManager_.Trigger(BUTTON_AUDIO_EVENT);
-            StartCoroutine(nameof(HoldE));
+            StartCoroutine(nameof(HoldC));
         }
     }
 
@@ -64,7 +64,7 @@ public sealed class ButtonE : UIBase_, IPointerDownHandler, IPointerUpHandler, I
         {
             _do.Kill();
             RectT.DOScale(Vector2.one, SCALE_DURATION);
-            StopCoroutine(nameof(HoldE));
+            StopCoroutine(nameof(HoldC));
         }
     }
 
@@ -77,7 +77,7 @@ public sealed class ButtonE : UIBase_, IPointerDownHandler, IPointerUpHandler, I
     /// 长按
     /// </summary>
     /// <returns>间隔时间</returns>
-    private System.Collections.IEnumerator HoldE()
+    private System.Collections.IEnumerator HoldC()
     {
         while (true)
         {

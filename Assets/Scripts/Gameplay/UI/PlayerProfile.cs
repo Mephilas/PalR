@@ -51,7 +51,7 @@ public class PlayerProfile : UIBase_
     /// 初始化
     /// </summary>
     /// <param name="role">角色</param>
-    public void Init(in Role role)
+    public void Init(Role role)
     {
         Display();
 
@@ -66,7 +66,7 @@ public class PlayerProfile : UIBase_
     /// <summary>
     /// 初始化
     /// </summary>
-    public void Init(UnityAction select, UnityAction selected, in Role player)
+    public void Init(UnityAction select, UnityAction selected, Role player)
     {
         _select = select;
         _buttonE.Init(selected);

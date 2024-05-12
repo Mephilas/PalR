@@ -36,6 +36,16 @@ public static class Const
     public static readonly Color GREYISH = new(0.75f, 0.75f, 0.75f);
 
     /// <summary>
+    /// 火攻
+    /// </summary>
+    public static readonly Color FIRE = new(1, 0.25f, 0);
+
+    /// <summary>
+    /// 土攻
+    /// </summary>
+    public static readonly Color SOIL = new(0.75f, 0.5f, 0.25f);
+
+    /// <summary>
     /// 等待物理帧
     /// </summary>
     public static readonly WaitForFixedUpdate WAIT_FOR_FIXED_UPDATE = new();
@@ -76,7 +86,7 @@ public static class Const
     public static readonly WaitForSeconds WAIT_FOR_5S = new(5);
 
     /// <summary>
-    /// 序列帧CG播放播放速度
+    /// 序列帧CG播放速度
     /// </summary>
     public static readonly WaitForSeconds SEQUENCE_CG_PLAY_SPEED = new(0.05f);
 
@@ -89,6 +99,11 @@ public static class Const
     /// 动画播放速度
     /// </summary>
     public static readonly WaitForSeconds SPECIAL_ANIMATION_PLAY_SPEED = new(0.2f);
+
+    /// <summary>
+    /// 仙术序列帧播放速度
+    /// </summary>
+    public static readonly WaitForSeconds SKILL_PLAY_SPEED = new(0.05f);
 
     /// <summary>
     /// 台词播放速度

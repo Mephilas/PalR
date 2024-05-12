@@ -83,7 +83,7 @@ public sealed class SLPanel : UIPanelBase
                 UIManager_.PanelClear();
                 GameManager_.InGame = true;
                 GameManager_.Trigger(BASIC_PANEL_EVENT);
-                GameManager_.Trigger(new(SaveOrLoad ? GameEventType.Save : GameEventType.Load, index.ToString()));
+                GameManager_.Trigger(SaveOrLoad ? GameEventType.Save : GameEventType.Load, index.ToString());
             });
         }
     }

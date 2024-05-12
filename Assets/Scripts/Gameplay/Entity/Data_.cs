@@ -1,6 +1,5 @@
 using System;
 using System.Collections.Generic;
-using UnityEditor.UIElements;
 using UnityEngine;
 
 /// <summary>
@@ -22,7 +21,7 @@ public abstract class DataBase
     /// 构造
     /// </summary>
     /// <param name="data">数据</param>
-    public DataBase(string[] data) => FullID = (ID = int.Parse(data[0])).ToString();
+    public DataBase(params string[] data) => FullID = (ID = int.Parse(data[0])).ToString();
 
     /// <summary>
     /// 全长ID补齐
@@ -100,7 +99,7 @@ public sealed class MissionData : DataBase
     /// 构造
     /// </summary>
     /// <param name="data">数据</param>
-    public MissionData(string[] data) : base(data)
+    public MissionData(params string[] data) : base(data)
     {
         int index = 1;
 
@@ -256,17 +255,57 @@ public sealed class RoleData : DataBase
     /// <summary>
     /// 战斗动画集合
     /// </summary>
-    private readonly List<Dictionary<BattleAnimType, Sprite[]>> BattleAnimList = new();
+    private readonly List<Dictionary<RoleBattleState, Sprite[]>> BattleAnimList = new();
 
     /// <summary>
     /// 当前战斗动画集合
     /// </summary>
-    public Dictionary<BattleAnimType, Sprite[]> CurrentBattleAnimDic { get { return BattleAnimList[SkinIndex]; } }
+    public Dictionary<RoleBattleState, Sprite[]> CurrentBattleAnimDic { get { return BattleAnimList[SkinIndex]; } }
 
     /// <summary>
     /// 头像集合
     /// </summary>
     public readonly Dictionary<ExpressionType, Sprite> ProfilePictureDic = new();
+
+    /// <summary>
+    /// 近战音效
+    /// </summary>
+    public readonly AudioClip MeleeAudio;
+
+    /// <summary>
+    /// 暴击音效
+    /// </summary>
+    public readonly AudioClip CriticalAudio;
+
+    /// <summary>
+    /// 远程音效
+    /// </summary>
+    public readonly AudioClip RangedAudio;
+
+    /// <summary>
+    /// 死亡音效
+    /// </summary>
+    public readonly AudioClip DeceaseAudio;
+
+    /// <summary>
+    /// 当前近战音效关键帧
+    /// </summary>
+    public int CurrentMeleeAudioKeyFrame { get { return MeleeKeyFrameArray[SkinIndex][0]; } }
+
+    /// <summary>
+    /// 当前近战移动关键帧
+    /// </summary>
+    public int CurrentMeleeMoveKeyFrame { get { return MeleeKeyFrameArray[SkinIndex][1]; } }
+
+    /// <summary>
+    /// 当前近战判定关键帧
+    /// </summary>
+    public int CurrentMeleeAttackKeyFrame { get { return MeleeKeyFrameArray[SkinIndex][2]; } }
+
+    /// <summary>
+    /// 当前远程音效关键帧
+    /// </summary>
+    public int CurrentRangedAudioKeyFrame { get { return RangedAudioKeyFrameArray[SkinIndex]; } }
 
     /// <summary>
     /// 状态事件集合
@@ -299,7 +338,7 @@ public sealed class RoleData : DataBase
     public int DialogueIndex { get; set; } = -1;
 
     /// <summary>
-    /// 等级学习技能集合
+    /// 等级学习仙术集合
     /// </summary>
     public readonly Dictionary<int, int> LevelLearnSkillDic = new();
 
@@ -339,6 +378,11 @@ public sealed class RoleData : DataBase
     public readonly int LuckBase;
 
     /// <summary>
+    /// 暴击
+    /// </summary>
+    public readonly int Critical;
+
+    /// <summary>
     /// 战斗音乐
     /// </summary>
     public readonly string BattleBG;
@@ -347,6 +391,16 @@ public sealed class RoleData : DataBase
     /// 战斗角色ID集合
     /// </summary>
     public readonly int[] BattleIDGroup;
+
+    /// <summary>
+    /// 战斗台词
+    /// </summary>
+    public readonly int BattleDialogue = -1;
+
+    /// <summary>
+    /// 击败台词
+    /// </summary>
+    public readonly int BeatDialogue = -1;
 
     /// <summary>
     /// 默认装备
@@ -359,14 +413,34 @@ public sealed class RoleData : DataBase
     public readonly int[] DefaultSkill;
 
     /// <summary>
+    /// 二次行动
+    /// </summary>
+    public readonly bool DoubleKill;
+
+    /// <summary>
+    /// 普攻附带Buff概率
+    /// </summary>
+    public readonly int BuffChance;
+
+    /// <summary>
+    /// Buff ID
+    /// </summary>
+    public readonly int BuffID;
+
+    /// <summary>
+    /// 召唤ID，与自身相同则分裂
+    /// </summary>
+    public readonly int Summon;
+
+    /// <summary>
+    /// 变身ID
+    /// </summary>
+    public readonly int HenShin;
+
+    /// <summary>
     /// 合击仙术
     /// </summary>
     public readonly int JointSkillID;
-
-    /// <summary>
-    /// 出售物品
-    /// </summary>
-    public readonly int[] SellItem;  //拆分为单人多商店并带有购买条件
 
     /// <summary>
     /// 飞龙探云手掉落
@@ -374,16 +448,76 @@ public sealed class RoleData : DataBase
     public readonly int[] StealItem;
 
     /// <summary>
+    /// 近战关键帧集合
+    /// </summary>
+    public readonly int[][] MeleeKeyFrameArray;
+
+    /// <summary>
+    /// 远程音效关键帧集合
+    /// </summary>
+    public readonly int[] RangedAudioKeyFrameArray;
+
+    /// <summary>
+    /// 基础物理抗性
+    /// </summary>
+    public readonly int PhiResistanceBase;
+
+    /// <summary>
+    /// 基础风抗性
+    /// </summary>
+    public readonly int WindResistanceBase;
+
+    /// <summary>
+    /// 基础雷抗性
+    /// </summary>
+    public readonly int ThunderResistanceBase;
+
+    /// <summary>
+    /// 基础水抗性
+    /// </summary>
+    public readonly int WaterResistanceBase;
+
+    /// <summary>
+    /// 基础火抗性
+    /// </summary>
+    public readonly int FireResistanceBase;
+
+    /// <summary>
+    /// 基础土抗性
+    /// </summary>
+    public readonly int SoilResistanceBase;
+
+    /// <summary>
+    /// 基础毒抗性
+    /// </summary>
+    public readonly int PoisonResistanceBase;
+
+    /// <summary>
+    /// 基础巫术抗性
+    /// </summary>
+    public readonly int WitcheryResistanceBase;
+
+    /// <summary>
+    /// 击败经验
+    /// </summary>
+    public readonly int BeatExperience;
+
+    /// <summary>
     /// 击败掉落
     /// </summary>
-    public readonly int[] DefeatItem;
+    public readonly int[] BeatItemArray;
+
+    /// <summary>
+    /// 出售物品
+    /// </summary>
+    public readonly int[] SellItem;  //拆分为单人多商店并带有购买条件
     #endregion
 
     /// <summary>
     /// 构造
     /// </summary>
     /// <param name="data">数据</param>
-    public RoleData(string[] data) : base(data)
+    public RoleData(params string[] data) : base(data)
     {
         FullIDCompletion(FullIDTimes.Hundreds);
 
@@ -397,9 +531,9 @@ public sealed class RoleData : DataBase
 
                 AnimList.Add(tempAnimDic);
 
-                Dictionary<BattleAnimType, Sprite[]> tempBattleAnimDic = new();
-                Array battleAnimArray = Enum.GetValues(typeof(BattleAnimType));
-                foreach (BattleAnimType battleAnimType in battleAnimArray)
+                Dictionary<RoleBattleState, Sprite[]> tempBattleAnimDic = new();
+                Array battleAnimArray = Enum.GetValues(typeof(RoleBattleState));
+                foreach (RoleBattleState battleAnimType in battleAnimArray)
                 {
                     Sprite[] animArray = Resources.LoadAll<Sprite>("Role/" + FullID + "/Skin" + i + "/" + battleAnimType);
 
@@ -420,6 +554,11 @@ public sealed class RoleData : DataBase
         for (int i = 0; i != tempSPA.Length; i++)
             ProfilePictureDic.Add((ExpressionType)i, tempSPA[i]);
 
+        MeleeAudio = Resources.Load<AudioClip>("Role/" + FullID + "SoundEffect/" + nameof(MeleeAudio));
+        CriticalAudio = Resources.Load<AudioClip>("Role/" + FullID + "SoundEffect/" + nameof(CriticalAudio));
+        RangedAudio = Resources.Load<AudioClip>("Role/" + FullID + "SoundEffect/" + nameof(RangedAudio));
+        DeceaseAudio = Resources.Load<AudioClip>("Role/" + FullID + "SoundEffect/" + nameof(DeceaseAudio));
+
         int index = 1;
         _name = data[index++];
 
@@ -437,24 +576,48 @@ public sealed class RoleData : DataBase
 
         if (string.IsNullOrEmpty(data[index]))
         {
-            index += 14;  //无战斗数据略过长度
+            index += 25;  //无战斗数据略过长度
         }
         else
         {
-            HPBase = int.Parse(data[index++]);
-            MPBase = int.Parse(data[index++]);
-            AttackBase = int.Parse(data[index++]);
-            MagicBase = int.Parse(data[index++]);
-            DefenseBase = int.Parse(data[index++]);
-            SpeedBase = int.Parse(data[index++]);
-            LuckBase = int.Parse(data[index++]);
+            if (!string.IsNullOrEmpty(data[index++])) HPBase = int.Parse(data[index - 1]);
+            if (!string.IsNullOrEmpty(data[index++])) MPBase = int.Parse(data[index - 1]);
+            if (!string.IsNullOrEmpty(data[index++])) AttackBase = int.Parse(data[index - 1]);
+            if (!string.IsNullOrEmpty(data[index++])) MagicBase = int.Parse(data[index - 1]);
+            if (!string.IsNullOrEmpty(data[index++])) DefenseBase = int.Parse(data[index - 1]);
+            if (!string.IsNullOrEmpty(data[index++])) SpeedBase = int.Parse(data[index - 1]);
+            if (!string.IsNullOrEmpty(data[index++])) LuckBase = int.Parse(data[index - 1]);
+            if (!string.IsNullOrEmpty(data[index++]))
+            {
+                int index_ = 0;
+                int[] resistanceArray = data[index - 1].S2IA();
+
+                PhiResistanceBase = resistanceArray[index_++];
+                WindResistanceBase = resistanceArray[index_++];
+                ThunderResistanceBase = resistanceArray[index_++];
+                WaterResistanceBase = resistanceArray[index_++];
+                FireResistanceBase = resistanceArray[index_++];
+                SoilResistanceBase = resistanceArray[index_++];
+                PoisonResistanceBase = resistanceArray[index_++];
+                WitcheryResistanceBase = resistanceArray[index_++];
+            }
+            if (!string.IsNullOrEmpty(data[index++])) Critical = int.Parse(data[index - 1]);
             if (!string.IsNullOrEmpty(data[index++])) BattleBG = data[index - 1];
             if (!string.IsNullOrEmpty(data[index++])) BattleIDGroup = data[index - 1].S2IA();
+            if (!string.IsNullOrEmpty(data[index++])) BattleDialogue = int.Parse(data[index - 1]);
+            if (!string.IsNullOrEmpty(data[index++])) BeatDialogue = int.Parse(data[index - 1]);
             if (!string.IsNullOrEmpty(data[index++])) DefaultOutfit = data[index - 1].S2IA();
-            DefaultSkill = data[index++].S2IA();
+            if (!string.IsNullOrEmpty(data[index++])) DefaultSkill = data[index - 1].S2IA();
+            if (!string.IsNullOrEmpty(data[index++])) DoubleKill = bool.Parse(data[index - 1]);
+            if (!string.IsNullOrEmpty(data[index++])) { BuffChance = int.Parse(data[index - 1].Split(Const.SPLIT_1)[0]); BuffID = int.Parse(data[index - 1].Split(Const.SPLIT_1)[0]); }
+            if (!string.IsNullOrEmpty(data[index++])) Summon = int.Parse(data[index - 1]);
+            if (!string.IsNullOrEmpty(data[index++])) HenShin = int.Parse(data[index - 1]);
             if (!string.IsNullOrEmpty(data[index++])) JointSkillID = int.Parse(data[index - 1]);
             if (!string.IsNullOrEmpty(data[index++])) StealItem = data[index - 1].S2IA();
-            if (!string.IsNullOrEmpty(data[index++])) DefeatItem = data[index - 1].S2IA();
+            if (!string.IsNullOrEmpty(data[index++])) MeleeKeyFrameArray = data[index - 1].S2IAA();
+            if (!string.IsNullOrEmpty(data[index++])) RangedAudioKeyFrameArray = data[index - 1].S2IA();
+            if (!string.IsNullOrEmpty(data[index++])) BeatExperience = int.Parse(data[index - 1]);
+            if (!string.IsNullOrEmpty(data[index++])) BeatItemArray = data[index - 1].S2IA();
         }
 
         if (!string.IsNullOrEmpty(data[index++])) SellItem = data[index - 1].S2IA();
@@ -480,6 +643,7 @@ public sealed class RoleData : DataBase
 /// </summary>
 public sealed class ItemData : DataBase
 {
+    #region
     /// <summary>
     /// 堆叠数量
     /// </summary>
@@ -521,9 +685,14 @@ public sealed class ItemData : DataBase
     public readonly OutfitType OutfitType;
 
     /// <summary>
-    /// 武器单体攻击
+    /// 远程武器
     /// </summary>
-    public readonly bool SingleAttack;
+    public readonly bool Ranged;
+
+    /// <summary>
+    /// 双手武器二段攻击
+    /// </summary>
+    public readonly bool TwoHand;
 
     /// <summary>
     /// 合击仙术
@@ -546,14 +715,24 @@ public sealed class ItemData : DataBase
     public readonly bool Throw;
 
     /// <summary>
-    /// 投掷效果
+    /// 伤害值
     /// </summary>
-    public readonly ItemEvent ThrowEffect;
+    public readonly int Damage;
 
     /// <summary>
-    /// 特效ID取自技能
+    /// 特效ID取自仙术
     /// </summary>
-    public readonly int EffectSkillID;
+    public readonly int EffectSkillID = -1;
+
+    /// <summary>
+    /// Buff添加概率
+    /// </summary>
+    public readonly int BuffChance;
+
+    /// <summary>
+    /// Buff ID
+    /// </summary>
+    public readonly int BuffID = -1;
 
     /// <summary>
     /// 全队效果
@@ -563,9 +742,10 @@ public sealed class ItemData : DataBase
     /// <summary>
     /// 物品效果集合
     /// </summary>
-    public readonly List<ItemEvent> EventList = new();
+    public readonly RoleEventData[] EventArray;
+    #endregion
 
-    public ItemData(string[] data) : base(data)
+    public ItemData(params string[] data) : base(data)
     {
         FullIDCompletion(FullIDTimes.Hundreds);
         Icon = Resources.Load<Sprite>("Item/" + FullID);
@@ -577,35 +757,39 @@ public sealed class ItemData : DataBase
         if (!string.IsNullOrEmpty(data[index++])) SellPrice = int.Parse(data[index - 1]);
         if (!string.IsNullOrEmpty(data[index++])) Outfit = bool.Parse(data[index - 1]);
         if (!string.IsNullOrEmpty(data[index++])) OutfitType = data[index - 1].S2E<OutfitType>();
-        if (!string.IsNullOrEmpty(data[index++])) SingleAttack = bool.Parse(data[index - 1]);
+        if (!string.IsNullOrEmpty(data[index++])) Ranged = bool.Parse(data[index - 1]);
+        if (!string.IsNullOrEmpty(data[index++])) TwoHand = bool.Parse(data[index - 1]);
         if (!string.IsNullOrEmpty(data[index++])) JointSkillID = int.Parse(data[index - 1]);
         if (!string.IsNullOrEmpty(data[index++])) RoleRequireArray = data[index - 1].S2IA();
         if (!string.IsNullOrEmpty(data[index++])) LevelRequire = int.Parse(data[index - 1]);
         if (!string.IsNullOrEmpty(data[index++])) Throw = bool.Parse(data[index - 1]);
-        if (!string.IsNullOrEmpty(data[index++])) ThrowEffect = new(data[index - 1].Split(Const.SPLIT_1));
+        if (!string.IsNullOrEmpty(data[index++])) Damage = int.Parse(data[index - 1]);
         if (!string.IsNullOrEmpty(data[index++])) EffectSkillID = int.Parse(data[index - 1]);
-        if (!string.IsNullOrEmpty(data[index++])) Effect2All = bool.Parse(data[index - 1]);
+        if (!string.IsNullOrEmpty(data[index++])) BuffChance = int.Parse(data[index - 1]);
+        if (!string.IsNullOrEmpty(data[index++])) BuffID = int.Parse(data[index - 1]);
+        Effect2All = bool.Parse(data[index++]);
 
         int count = data.Length - index;
+        EventArray = new RoleEventData[count];
         for (int i = 0; i != count; i++)
-            EventList.Add(new(data[index + i].Split(Const.SPLIT_1)));
+            EventArray[i] = data[index + i].S2RE();
     }
 }
 
 
 /// <summary>
-/// 物品事件
+/// 角色事件
 /// </summary>
-public sealed class ItemEvent
+public sealed class RoleEventData
 {
     public readonly RoleEffectType RoleEffectType;
 
-    public readonly int EffectValue;
+    public readonly int Value;
 
-    public ItemEvent(string[] eventDataArray)
+    public RoleEventData(RoleEffectType roleEffectType, int value)
     {
-        RoleEffectType = eventDataArray[0].S2E<RoleEffectType>();
-        EffectValue = int.Parse(eventDataArray[1]);
+        RoleEffectType = roleEffectType;
+        Value = value;
     }
 }
 
@@ -648,102 +832,11 @@ public enum OutfitType
 
 
 /// <summary>
-/// 角色效果类型
-/// </summary>
-public enum RoleEffectType
-{
-    /// <summary>
-    /// 台词
-    /// </summary>
-    Dialogue,
-
-    /// <summary>
-    /// 经验增加
-    /// </summary>
-    ExperienceAdd,
-
-    /// <summary>
-    /// 等级增加
-    /// </summary>
-    LevelAdd,
-
-    /// <summary>
-    /// 仙术学习
-    /// </summary>
-    SkillLearn,
-
-    /// <summary>
-    /// Buff添加
-    /// </summary>
-    BuffAdd,
-
-    /// <summary>
-    /// 体力增加
-    /// </summary>
-    HPAdd,
-
-    /// <summary>
-    /// 体力全体增加
-    /// </summary>
-    HPAddAll,
-
-    /// <summary>
-    /// 体力上限增加
-    /// </summary>
-    HPMaxAdd,
-
-    /// <summary>
-    /// 真气增加
-    /// </summary>
-    MPAdd,
-
-    /// <summary>
-    /// 真气全体增加
-    /// </summary>
-    MPAddAll,
-
-    /// <summary>
-    /// 真气上限增加
-    /// </summary>
-    MPMaxAdd,
-
-    /// <summary>
-    /// 武术增加
-    /// </summary>
-    AttackAdd,
-
-    /// <summary>
-    /// 灵力增加
-    /// </summary>
-    MagicAdd,
-
-    /// <summary>
-    /// 防御增加
-    /// </summary>
-    DefenseAdd,
-
-    /// <summary>
-    /// 身法增加
-    /// </summary>
-    SpeedAdd,
-
-    /// <summary>
-    /// 吉运增加
-    /// </summary>
-    LuckAdd
-}
-
-
-/// <summary>
 /// 仙术数据
 /// </summary>
 public sealed class SkillData : DataBase
 {
-    /// <summary>
-    /// 特效集合
-    /// </summary>
-    public readonly Sprite[] EffectArray;
-
+    #region
     /// <summary>
     /// 名称
     /// </summary>
@@ -755,11 +848,6 @@ public sealed class SkillData : DataBase
     public readonly string Description;
 
     /// <summary>
-    /// 单/群体
-    /// </summary>
-    public readonly bool Effect2All;
-
-    /// <summary>
     /// 真气消耗
     /// </summary>
     public readonly int Cost;
@@ -767,12 +855,27 @@ public sealed class SkillData : DataBase
     /// <summary>
     /// 数值
     /// </summary>
-    public readonly int Value;
+    public readonly bool Attack;
+
+    /// <summary>
+    /// 伤害值
+    /// </summary>
+    public readonly int Damage;
+
+    /// <summary>
+    /// 召唤物
+    /// </summary>
+    public readonly int SummonID = -1;
+
+    /// <summary>
+    /// 召唤关键帧，-1为最后帧
+    /// </summary>
+    public readonly int SummonKeyFrame = -1;
 
     /// <summary>
     /// 特效ID
     /// </summary>
-    public readonly int EffectID;
+    public readonly int EffectID = -1;
 
     /// <summary>
     /// 特效偏移
@@ -780,30 +883,319 @@ public sealed class SkillData : DataBase
     public readonly Vector2 EffectOffset;
 
     /// <summary>
-    /// Buff ID
+    /// 仙术关键帧
     /// </summary>
-    public readonly int BuffID;
+    public readonly int SkillKeyFrame;
 
     /// <summary>
-    /// Buff添加成功率
+    /// Buff添加概率
     /// </summary>
-    public readonly uint SuccessRate;
+    public readonly int BuffChance;
 
-    public SkillData(string[] data) : base(data)
+    /// <summary>
+    /// Buff ID
+    /// </summary>
+    public readonly int BuffID = -1;
+
+    /// <summary>
+    /// 单/群体
+    /// </summary>
+    public readonly bool Effect2All;
+
+    /// <summary>
+    /// 地形残留
+    /// </summary>
+    public readonly bool Terrain;
+
+    /// <summary>
+    /// 伤害类型
+    /// </summary>
+    public readonly NatureType DamageType;
+
+    /// <summary>
+    /// 技能效果集合
+    /// </summary>
+    public readonly RoleEventData[] EventArray;
+    #endregion
+
+    public SkillData(params string[] data) : base(data)
     {
         FullIDCompletion(FullIDTimes.Tens);
-        EffectArray = Resources.LoadAll<Sprite>("Skill/" + FullID);
 
         int index = 1;
         Name = data[index++];
         Description = data[index++].Replace(Const.SPLIT_P, Const.SPLIT_N);
         Cost = int.Parse(data[index++]);
-        Value = int.Parse(data[index++]);
+        Attack = bool.Parse(data[index++]);
+        if (!string.IsNullOrEmpty(data[index++])) Damage = int.Parse(data[index - 1]);
+        if (!string.IsNullOrEmpty(data[index++])) SummonID = int.Parse(data[index - 1]);
+        if (!string.IsNullOrEmpty(data[index++])) SummonKeyFrame = int.Parse(data[index - 1]);
         if (!string.IsNullOrEmpty(data[index++])) EffectID = int.Parse(data[index - 1]);
         if (!string.IsNullOrEmpty(data[index++])) EffectOffset = data[index - 1].Split(Const.SPLIT_1).SA2V2();
+        if (!string.IsNullOrEmpty(data[index++])) SkillKeyFrame = int.Parse(data[index - 1]);
+        else if (-1 != EffectID) SkillKeyFrame = DataManager_.SkillEffectList[EffectID].Last();
+        if (!string.IsNullOrEmpty(data[index++])) BuffChance = int.Parse(data[index - 1]);
         if (!string.IsNullOrEmpty(data[index++])) BuffID = int.Parse(data[index - 1]);
-        Effect2All = bool.Parse(data[index++]);
+        if (!string.IsNullOrEmpty(data[index++])) Effect2All = bool.Parse(data[index - 1]);
+        if (!string.IsNullOrEmpty(data[index++])) Terrain = bool.Parse(data[index - 1]);
+        DamageType = data[index++].S2E<NatureType>();
+
+        int count = data.Length - index;
+        EventArray = new RoleEventData[count];
+        for (int i = 0; i != count; i++)
+            EventArray[i] = data[index + i].S2RE();
     }
+}
+
+
+/// <summary>
+/// Buff数据
+/// </summary>
+public sealed class BuffData : DataBase
+{
+    /// <summary>
+    /// 名称
+    /// </summary>
+    public readonly string Name;
+
+    /// <summary>
+    /// 持续时长
+    /// </summary>
+    public readonly int Duration;
+
+    /// <summary>
+    /// 回合数
+    /// </summary>
+    public int RoundCount { get; private set; } = 1;
+
+    /// <summary>
+    /// 数值集合
+    /// </summary>
+    public readonly int[] ValueArray;
+
+    /// <summary>
+    /// 值
+    /// </summary>
+    public int Value { get; private set; }
+
+    /// <summary>
+    /// 伤害类型
+    /// </summary>
+    public readonly BuffType BuffType;
+
+    /// <summary>
+    /// 挂载目标
+    /// </summary>
+    private BattleRole _battleRole;
+
+    /// <summary>
+    /// 初始化
+    /// </summary>
+    /// <param name="battleRole">战斗角色</param>
+    public void Init(BattleRole battleRole)
+    {
+        _battleRole = battleRole;
+        ToolsE.LogWarning(_battleRole.BuffList.Count, battleRole.gameObject);
+        for (int i = 0; i != _battleRole.BuffList.Count; i++)
+        {
+            if (BuffType == _battleRole.BuffList[i].BuffType)
+            {
+                ToolsE.LogWarning(_battleRole.BuffList[i].RoundCount + "  " + _battleRole.BuffList[i].Duration + "  " + _battleRole.BuffList[i].ValueArray[0]);
+                if (ValueArray[0] < 0) _battleRole.BuffList[i] = this;
+                else _battleRole.BuffList[i].RoundCount = 1;
+                ToolsE.LogWarning(_battleRole.BuffList[i].RoundCount + "  " + _battleRole.BuffList[i].Duration + "  " + _battleRole.BuffList[i].ValueArray[0]);
+                return;
+            }
+        }
+
+        //辅助Buff施放后立即生效
+        if (0 <= ValueArray[0])
+        {
+            switch (BuffType)
+            {
+                case BuffType.Attack:
+                    _battleRole.Attack += Value = (int)((null == _battleRole.RoleEntity ? _battleRole.RoleData.AttackBase : _battleRole.RoleEntity.Attack) * ValueArray[0] * 0.01f).Round();
+                    break;
+                case BuffType.Defense:
+                    ToolsE.LogWarning(Value + "  " + _battleRole.Defense);
+                    _battleRole.Defense += Value = (int)((null == _battleRole.RoleEntity ? _battleRole.RoleData.DefenseBase : _battleRole.RoleEntity.Defense) * ValueArray[0] * 0.01f).Round();
+                    ToolsE.LogWarning(Value + "  " + _battleRole.Defense);
+                    break;
+                case BuffType.Speed:
+                    _battleRole.Speed += Value = (int)((null == _battleRole.RoleEntity ? _battleRole.RoleData.SpeedBase : _battleRole.RoleEntity.Speed) * ValueArray[0] * 0.01f).Round();
+                    break;
+            }
+        }
+
+        _battleRole.BuffList.Add(this);
+    }
+
+    /// <summary>
+    /// 处理
+    /// </summary>
+    /// <returns>结束</returns>
+    public bool Handle()
+    {
+        if (ValueArray[0] < 0)
+        {
+            Value = ValueArray[ValueArray.Length < Duration ? ValueArray.Last() : RoundCount];
+            ToolsE.LogWarning("  Buff value  " + Value);
+
+            _battleRole.Hit(NatureType.Poison, -Value, 0);
+        }
+        ToolsE.LogWarning(RoundCount);
+        if (Duration == RoundCount++)
+        {
+            switch (BuffType)
+            {
+                case BuffType.Attack:
+                    _battleRole.Attack -= Value;
+                    break;
+                case BuffType.Defense:
+                    ToolsE.LogWarning(Value + "  " + _battleRole.Defense);
+                    _battleRole.Defense -= Value;
+                    ToolsE.LogWarning(Value + "  " + _battleRole.Defense);
+                    break;
+                case BuffType.Speed:
+                    _battleRole.Speed -= Value;
+                    break;
+            }
+
+            return true;
+        }
+
+        return false;
+    }
+
+    /// <summary>
+    /// 构造
+    /// </summary>
+    /// <param name="data"></param>
+    public BuffData(params string[] data) : base(data)
+    {
+        int index = 1;
+        Name = data[index++];
+        Duration = int.Parse(data[index++]);
+        ValueArray = data[index++].S2IA();
+        BuffType = data[index].S2E<BuffType>();
+    }
+
+    /// <summary>
+    /// 拷贝构造
+    /// </summary>
+    /// <param name="templateID"></param>
+    /// <param name="data"></param>
+    public BuffData(int templateID, params string[] data) : base(data)
+    {
+        BuffData buffData = DataManager_.BuffDataArray[templateID];
+
+        Name = buffData.Name;
+        Duration = buffData.Duration;
+        ValueArray = buffData.ValueArray;
+        BuffType = buffData.BuffType;
+    }
+}
+
+
+/// <summary>
+/// Buff类型  有些毒玩了20年都不知道它是什么
+/// </summary>
+public enum BuffType
+{
+    /// <summary>
+    /// 赤毒
+    /// </summary>
+    Poison0,
+
+    /// <summary>
+    /// 尸毒
+    /// </summary>
+    Poison1,
+
+    /// <summary>
+    /// 瘴毒
+    /// </summary>
+    Poison2,
+
+    /// <summary>
+    /// 毒丝
+    /// </summary>
+    Poison3,
+
+    /// <summary>
+    /// 鹤顶红
+    /// </summary>
+    Poison4,
+
+    /// <summary>
+    /// 孔雀胆
+    /// </summary>
+    Poison5,
+
+    /// <summary>
+    /// 血海棠
+    /// </summary>
+    Poison6,
+
+    /// <summary>
+    /// 断肠草
+    /// </summary>
+    Poison7,
+
+    /// <summary>
+    /// 无影毒
+    /// </summary>
+    Poison8,
+
+    /// <summary>
+    /// 三尸蛊
+    /// </summary>
+    Poison9,
+
+    /// <summary>
+    /// 金蚕蛊
+    /// </summary>
+    Poison10,
+
+    /// <summary>
+    /// 定身
+    /// </summary>
+    ActionLock,
+
+    /// <summary>
+    /// 昏睡
+    /// </summary>
+    Coma,
+
+    /// <summary>
+    /// 疯魔
+    /// </summary>
+    Crazy,
+
+    /// <summary>
+    /// 咒封
+    /// </summary>
+    SkillLock,
+
+    /// <summary>
+    /// 加攻
+    /// </summary>
+    Attack,
+
+    /// <summary>
+    /// 加防
+    /// </summary>
+    Defense,
+
+    /// <summary>
+    /// 加速
+    /// </summary>
+    Speed,
+
+    /// <summary>
+    /// 二次攻击
+    /// </summary>
+    DoubleKill
 }
 
 
@@ -859,7 +1251,7 @@ public sealed class DialogueData : DataBase
     /// 构造
     /// </summary>
     /// <param name="data">数据</param>
-    public DialogueData(string[] data) : base(data)
+    public DialogueData(params string[] data) : base(data)
     {
         int index = 1;
 
@@ -932,7 +1324,7 @@ public sealed class TipData : DataBase
     /// 构造
     /// </summary>
     /// <param name="data">数据</param>
-    public TipData(string[] data) : base(data)
+    public TipData(params string[] data) : base(data)
     {
         int index = 1;
 
@@ -967,7 +1359,7 @@ public sealed class ChooseData : DataBase
     /// 构造
     /// </summary>
     /// <param name="data">数据</param>
-    public ChooseData(string[] data) : base(data)
+    public ChooseData(params string[] data) : base(data)
     {
         int index = 1;
 

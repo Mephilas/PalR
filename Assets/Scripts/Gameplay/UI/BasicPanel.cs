@@ -73,7 +73,7 @@ public sealed class BasicPanel : UIPanelBase
         {
             _keyCode = null;
 
-            if (Input.GetMouseButtonDown(0)) GameManager_.Leader.ScreenRaycast();
+            if (Input.GetMouseButtonUp(0)) GameManager_.Leader.ScreenRaycast();
 
             if (Input.GetMouseButton(0))
             {

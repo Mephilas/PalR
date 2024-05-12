@@ -31,11 +31,6 @@ public sealed class Player : Role
     private Vector3 _rayDirection;
 
     /// <summary>
-    /// 射线碰撞
-    /// </summary>
-    private static RaycastHit _raycastHit;
-
-    /// <summary>
     /// 侦测点
     /// </summary>
     private Transform _detectT;
@@ -65,11 +60,15 @@ public sealed class Player : Role
     /// </summary>
     public static int[] SellItem { get { return _interactRole.RoleData.SellItem; } }
 
+    private static Transform _rayTargetT;
+
+    private static bool _rayHit;
+
     protected override void Awake()
     {
         base.Awake();
 
-        _rayLayer = 1 << LayerMask.NameToLayer(nameof(Device)) | 1 << LayerMask.NameToLayer(nameof(Role));
+        _rayLayer = 1 << LayerMask.NameToLayer(nameof(Device)) | 1 << LayerMask.NameToLayer(nameof(Role)) | 1 << LayerMask.NameToLayer(nameof(Player));
 
         CGC(ref _detectT, "Head");
     }
@@ -83,15 +82,15 @@ public sealed class Player : Role
         _isIdle = true;
     }
 
-    protected override void OnTriggerEnter(Collider other)
+    protected override void OnTriggerEnter(Collider collider)
     {
-        base.OnTriggerEnter(other);
-
-        if (GameManager_.InGame && this == GameManager_.Leader && other.CompareTag(nameof(Hostile)))
+        base.OnTriggerEnter(collider);
+        
+        if (GameManager_.InGame && this == GameManager_.Leader && collider.CompareTag(nameof(Hostile)))
         {
-            GameManager_.Trigger(new(GameEventType.Battle, other.GetComponent<Hostile>().RoleData.ID.ToString()));
+            GameManager_.Trigger(GameEventType.Battle, collider.GetComponent<Hostile>().RoleData.ID.ToString());
 
-            other.GetComponent<Hostile>().Hide();
+            collider.GetComponent<Hostile>().Hide();
         }
     }
 
@@ -100,42 +99,57 @@ public sealed class Player : Role
     /// </summary>
     public override void Detect()
     {
+        _rayHit = false;
+
         for (int i = 0; i != RAY_DIRECTION_OFFSET_ARRAY.Length; i++)
         {
-            if (Physics.Raycast(_detectT.position + _rayDirection.normalized * RAY_DIRECTION_OFFSET_ARRAY[i], Vector3.down, out _raycastHit, RAY_LENGTH, _rayLayer))
+            Debug.DrawRay(_detectT.position + _rayDirection.normalized * RAY_DIRECTION_OFFSET_ARRAY[i], Vector3.down * RAY_LENGTH, Color.yellow, 5);
+            if (Physics.Raycast(_detectT.position + _rayDirection.normalized * RAY_DIRECTION_OFFSET_ARRAY[i], Vector3.down, out RaycastHit _raycastHit, RAY_LENGTH, _rayLayer) && gameObject != _raycastHit.collider.gameObject)
             {
-                RayHandle(_raycastHit, false);
+                _rayHit = true;
 
-                return;
+                if ((_rayTargetT = _raycastHit.collider.transform).CompareTag(nameof(Device)))
+                {
+                    CastHandle();
+
+                    return;
+                }
             }
         }
+
+        if (_rayHit) CastHandle();
     }
 
     public override void ScreenRaycast()
     {
-        if (Physics.Raycast(CameraController.Camera.ScreenPointToRay(Input.mousePosition), out _raycastHit, 100, _rayLayer))
-            RayHandle(_raycastHit, true);
+        Debug.DrawRay(CameraController.Camera.ScreenPointToRay(Input.mousePosition).origin, CameraController.Camera.ScreenPointToRay(Input.mousePosition).direction, Color.blue, 5);
+        if (Physics.Raycast(CameraController.Camera.ScreenPointToRay(Input.mousePosition), out RaycastHit _raycastHit, 2000, _rayLayer))
+        {
+            _rayTargetT = _raycastHit.collider.transform;
+            CastHandle();
+        }
     }
 
     /// <summary>
     /// 射线处理
     /// </summary>
-    /// <param name="raycastHit">射线碰撞</param>
-    private void RayHandle(RaycastHit raycastHit, bool keyboard)
+    /// <param name="keyboard">键/鼠</param>
+    private void CastHandle()
     {
-        if (keyboard || Vector3.Distance(raycastHit.collider.transform.position, Transform.position) < INTERACT_DISTANCE)
+        if (Vector3.Distance(_rayTargetT.position, Transform.position) < INTERACT_DISTANCE)
         {
-            if (raycastHit.collider.gameObject.CompareTag(nameof(Role)))
+            if (_rayTargetT.CompareTag(nameof(Device)))
             {
-                (_interactRole = raycastHit.collider.GetComponent<Role>()).Interact();
+                _rayTargetT.GetComponent<Device>().Interact();
+                //GameManager_.TriggerAll(DataManager_.MapEventDataDic[_rayTargetT.parent.name + Const.SPLIT_3 + _rayTargetT.name]);
             }
-            else if (raycastHit.collider.gameObject.CompareTag(nameof(Device)))
+            else if (_rayTargetT.CompareTag(nameof(Role)))
             {
-                raycastHit.collider.gameObject.GetComponent<Device>().Interact();
-                //GameManager_.TriggerAll(DataManager_.MapEventDataDic[raycastHit.collider.transform.parent.name + Const.SPLIT_3 + raycastHit.collider.name]);
+                (_interactRole = _rayTargetT.GetComponent<Role>()).Interact();
             }
+            
         }
-        else ToolsE.LogWarning("Too far away:  " + Vector3.Distance(raycastHit.collider.transform.position, Transform.position));
+        else ToolsE.LogWarning("Too far away:  " + Vector3.Distance(_rayTargetT.position, Transform.position));
     }
 
     /// <summary>

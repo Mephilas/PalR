@@ -69,6 +69,7 @@ public sealed class UsePanel : UIPanelBase
     {
         _userArray[_lastIndex].Unselect();
         _userArray[_lastIndex = index].Select();
+        StateDisplay(GameManager_.PlayerList[_lastIndex]);
     }
 
     public override void Active(string[] argumentArray = null)
@@ -84,7 +85,7 @@ public sealed class UsePanel : UIPanelBase
             RoleData roleData = GameManager_.PlayerList[index].RoleData;
             _userArray[index].Init(() => Select(_currentIndex = index), () =>
             {
-                GameManager_.Trigger(new(GameEventType.ItemUse, new string[] { GameManager_.PlayerList[roleData.ID].RoleData.ID.ToString(), ItemPanel.SelectItem.ID.ToString() }));
+                GameManager_.Trigger(GameEventType.ItemUse, GameManager_.PlayerList[roleData.ID].RoleData.ID.ToString(), ItemPanel.SelectItem.ID.ToString());
                 GameManager_.Trigger(ITEM_PANEL_EVENT);
             }, roleData.Name);
         }

@@ -36,9 +36,19 @@ public sealed class DataManager_ : SingletonBase<DataManager_>
     public static ItemData[] ItemDataArray { get; private set; }
 
     /// <summary>
+    /// 仙术特效集合
+    /// </summary>
+    public static List<Sprite[]> SkillEffectList = new();
+
+    /// <summary>
     /// 仙术数据集合
     /// </summary>
     public static SkillData[] SkillDataArray { get; private set; }
+
+    /// <summary>
+    /// Buff数据集合
+    /// </summary>
+    public static BuffData[] BuffDataArray { get; private set; }
 
     /// <summary>
     /// 台词数据集合
@@ -118,7 +128,9 @@ public sealed class DataManager_ : SingletonBase<DataManager_>
         }
 
         ItemDataArray = DataLoad<ItemData>();
+        SkillEffectLoad();
         SkillDataArray = DataLoad<SkillData>();
+        BuffDataArray = DataLoad<BuffData>();
         DialogueDataArray = DataLoad<DialogueData>();
         TipDataArray = DataLoad<TipData>();
         ChooseDataArray = DataLoad<ChooseData>();
@@ -151,7 +163,7 @@ public sealed class DataManager_ : SingletonBase<DataManager_>
     /// 加载数据，StreamingAssets便于后续随意修改 -> Lua创意工坊或Unity扩展剧情地图编辑工具
     /// </summary>
     /// <returns></returns>
-    /*private IEnumerator LoadFormStreamingAssets()
+    /*private IEnumerator LoadFormStreamingAssetsC()
     {
         UnityWebRequest unityWebRequest = new(Application.streamingAssetsPath + "/SaveData_NewGame.csv") { downloadHandler = new DownloadHandlerBuffer() };
 
@@ -250,6 +262,26 @@ public sealed class DataManager_ : SingletonBase<DataManager_>
             tempSA_1 = tempSA_0[i].Split(Const.SPLIT_0);
 
             PortalDataDic.Add(tempSA_1[0], GameManager_.MAP_ROOT + Const.SPLIT_3 + tempSA_1[1]);
+        }
+    }
+
+    /// <summary>
+    /// 仙术特效读取
+    /// </summary>
+    private static void SkillEffectLoad()
+    {
+        string folder;
+        Sprite[] spriteArray;
+
+        for (int i = 0; i != 99; i++)
+        {
+            folder = i.ToString();
+            if (i < 10) folder = "0" + folder;
+
+            spriteArray = Resources.LoadAll<Sprite>("Skill/" + folder);
+
+            if (0 == spriteArray.Length) return;
+            else SkillEffectList.Add(spriteArray);
         }
     }
 
@@ -356,10 +388,9 @@ public sealed class DataManager_ : SingletonBase<DataManager_>
         {
             ToolsE.Log(nameof(Load) + " | " + args[0]);
 
+            GameManager_.Trigger(GameEventType.Clear);
+
             string[] saveData = System.IO.File.ReadAllText(string.Format(SAVE_PATH, args[0])).Split(Const.SPLIT_0);
-
-            GameManager_.Trigger(new(GameEventType.Clear, string.Empty));
-
             int index = 0;
 
             LoadApply(GameEventType.RoleState, saveData[index++]);
@@ -378,7 +409,7 @@ public sealed class DataManager_ : SingletonBase<DataManager_>
                 string[] tempSA = saveData.Split(Const.SPLIT_1);
 
                 for (int i = 0; i != tempSA.Length; i++)
-                    GameManager_.Trigger(new(gameEventType, tempSA[i].Split(Const.SPLIT_2)));
+                    GameManager_.Trigger(gameEventType, tempSA[i].Split(Const.SPLIT_2));
             }
         }
         else GameManager_.NewGame();

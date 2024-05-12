@@ -7,6 +7,9 @@ using UnityEngine.UI;
 public sealed class SkillPanel : UIPanelBase
 {
     #region
+    private static readonly Color VALID = new(0.8313726f, 0.7843138f, 0.6588235f),
+                                  INVALID = Color.red;
+
     /// <summary>
     /// 消耗灵力
     /// </summary>
@@ -43,7 +46,7 @@ public sealed class SkillPanel : UIPanelBase
     private static RectTransform _itemGridT;
 
     /// <summary>
-    /// 技能集合
+    /// 仙术集合
     /// </summary>
     private static TextSelector[] _skillArray;
 
@@ -95,22 +98,22 @@ public sealed class SkillPanel : UIPanelBase
     /// <summary>
     /// 仙术选中
     /// </summary>
-    public static bool IsSkillSelected { get; private set; }
+    private static bool _isSkillSelected;
 
     /// <summary>
     /// 施放角色选择状态
     /// </summary>
-    private static bool CastSelectState { get { return !_isPlayerSelected && !IsSkillSelected; } }
+    private static bool CastSelectState { get { return !_isPlayerSelected && !_isSkillSelected; } }
 
     /// <summary>
     /// 仙术选择状态
     /// </summary>
-    private static bool SkillSelectState { get { return _isPlayerSelected && !IsSkillSelected; } }
+    private static bool SkillSelectState { get { return _isPlayerSelected && !_isSkillSelected; } }
 
     /// <summary>
     /// 使用角色选择状态
     /// </summary>
-    private static bool ApplySelectState { get { return _isPlayerSelected && IsSkillSelected; } }
+    private static bool ApplySelectState { get { return _isPlayerSelected && _isSkillSelected; } }
 
     /// <summary>
     /// 角色选择状态
@@ -149,7 +152,7 @@ public sealed class SkillPanel : UIPanelBase
         }
         else if (ApplySelectState)
         {
-            IsSkillSelected = false;
+            _isSkillSelected = false;
             _playerArray[_currentPlayerIndex].Unselect();
             SkillSelect(_currentSkillIndex);
         }
@@ -167,7 +170,7 @@ public sealed class SkillPanel : UIPanelBase
         }
         else if (ApplySelectState)
         {
-            IsSkillSelected = false;
+            _isSkillSelected = false;
             PlayerSelected();
             for (int i = 0; i != GameManager_.PlayerList.Count; i++)
                 _playerArray[i].Refresh();
@@ -283,8 +286,7 @@ public sealed class SkillPanel : UIPanelBase
 
         if (_isPlayerSelected)
         {
-            GameManager_.Trigger(new(GameEventType.SkillCast,
-                new string[] { _castPlayer.RoleData.ID.ToString(), _selectSkill.ID.ToString(), _applyPlayer.RoleData.ID.ToString() }));
+            GameManager_.Trigger(GameEventType.SkillCast, _castPlayer.RoleData.ID.ToString(), _selectSkill.ID.ToString(), _applyPlayer.RoleData.ID.ToString());
         }
         else
         {
@@ -304,6 +306,8 @@ public sealed class SkillPanel : UIPanelBase
         _costMP.text = _selectSkill.Cost.ToString();
         _currentMP.text = _castPlayer.MP.ToString();
         _description.text = _selectSkill.Description;
+
+        _costMP.color = _selectSkill.Cost <= _castPlayer.MP ? VALID : INVALID;
     }
 
     /// <summary>
@@ -313,7 +317,7 @@ public sealed class SkillPanel : UIPanelBase
     {
         if (_selectSkill.Cost <= _castPlayer.MP)
         {
-            IsSkillSelected = true;
+            _isSkillSelected = true;
 
             _skillArray[_currentSkillIndex].Unselect(true);
 
@@ -351,6 +355,6 @@ public sealed class SkillPanel : UIPanelBase
 
         _playerArray[_currentPlayerIndex].Hide();
 
-        _isPlayerSelected = IsSkillSelected = false;
+        _isPlayerSelected = _isSkillSelected = false;
     }
 }

@@ -123,14 +123,14 @@ public sealed class CGPanel : UIPanelBase
         _doBlack.Kill(true);
         _doWhite = _rawImage.DOColor(Color.white, COLOR_CHANGE_TIME);
 
-        StartCoroutine(nameof(SequenceCGPlayI));
+        StartCoroutine(nameof(SequenceCGPlayC));
     }
 
     /// <summary>
     /// 序列帧CG播放协程
     /// </summary>
     /// <returns></returns>
-    private System.Collections.IEnumerator SequenceCGPlayI()
+    private System.Collections.IEnumerator SequenceCGPlayC()
     {
         for (int i = 0; i != _sequenceCG.Length; i++)
         {
@@ -141,7 +141,7 @@ public sealed class CGPanel : UIPanelBase
 
         GameManager_.Trigger(SEQUENCE_CG_EVENT_ARRAY[_sequenceCGID]);
 
-        StopCoroutine(nameof(SequenceCGPlayI));
+        StopCoroutine(nameof(SequenceCGPlayC));
     }
 
     /// <summary>

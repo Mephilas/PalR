@@ -42,6 +42,18 @@ public sealed class Root_ : SingletonBase<Root_>
         ToolsE.LogWarning(Application.persistentDataPath);
         ToolsE.LogWarning(Application.streamingAssetsPath);
         ToolsE.LogWarning(Application.temporaryCachePath);*/
+
+        /*for (int i = 1; i != 99; i++)
+        {
+            if (i < 10)
+            {
+                ToolsE.FileRename("/Resources/Skill/0" + i + "/", (i + 1).ToString());
+            }
+            else
+            {
+                ToolsE.FileRename("/Resources/Skill/" + i + "/", (i + 1).ToString());
+            }
+        }*/
     }
 
     private System.Collections.IEnumerator FPS()

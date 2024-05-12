@@ -58,7 +58,7 @@ public sealed class CameraController : SingletonBase<CameraController>
         moveData[2] = FOLLOW_OFFSET.y.ToString();
         moveData[3] = GameManager_.Leader.Transform.position.z.ToString();
 
-        GameManager_.Trigger(new(GameEventType.CameraMove, moveData));
+        GameManager_.Trigger(GameEventType.CameraMove, moveData);
     }
     private void CameraMove(string[] data)
     {
@@ -68,7 +68,7 @@ public sealed class CameraController : SingletonBase<CameraController>
 
         (_moveDT = Transform.DOMove(data.SA2V3(), float.Parse(data[0]))).onComplete = () =>
         {
-            if (4 < data.Length) GameManager_.Trigger(new(GameEventType.Dialogue, data[4]));
+            if (4 < data.Length) GameManager_.Trigger(GameEventType.Dialogue, data[4]);
         };
     }
     private void CameraScale(string[] data)

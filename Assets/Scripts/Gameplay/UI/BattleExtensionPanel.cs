@@ -14,7 +14,7 @@ public sealed class BattleExtensionPanel : UIPanelBase
     private static readonly UnityEngine.Events.UnityAction[] BattleExtensionArray = new UnityEngine.Events.UnityAction[4]
     {
         BattleField.AIBattle,
-        () => GameManager_.Trigger(new(GameEventType.UIPanel, UIPanel.BattleItemPanel.ToString())),
+        () => GameManager_.Trigger(GameEventType.UIPanel, UIPanel.BattleItemPanel.ToString()),
         BattleField.Defense,
         BattleField.RunForYourLife
     };

@@ -7,6 +7,9 @@ using UnityEngine.UI;
 public sealed class BattleSkillPanel : UIPanelBase
 {
     #region
+    private static readonly Color VALID = new(0.8313726f, 0.7843138f, 0.6588235f),
+                                  INVALID = Color.red;
+
     /// <summary>
     /// 消耗灵力
     /// </summary>
@@ -38,7 +41,7 @@ public sealed class BattleSkillPanel : UIPanelBase
     private static RectTransform _itemGridT;
 
     /// <summary>
-    /// 技能集合
+    /// 仙术集合
     /// </summary>
     private static TextSelector[] _skillArray;
 
@@ -101,6 +104,8 @@ public sealed class BattleSkillPanel : UIPanelBase
             _costMP.text = _selectSkill.Cost.ToString();
             _currentMP.text = _castPlayer.MP.ToString();
             _description.text = _selectSkill.Description;
+
+            _costMP.color = _selectSkill.Cost <= _castPlayer.MP ? VALID : INVALID;
         }
     }
 
@@ -110,7 +115,7 @@ public sealed class BattleSkillPanel : UIPanelBase
     private static void SkillSelected()
     {
         if (_selectSkill.Cost <= _castPlayer.MP)
-            GameManager_.Trigger(new(GameEventType.UIPanel, new string[] { UIPanel.BattlePanel.ToString(), "True", _selectSkill.ID.ToString(), "True" }));
+            GameManager_.Trigger(GameEventType.UIPanel, UIPanel.BattlePanel.ToString(), "True", _selectSkill.ID.ToString(), "True");
     }
 
     public override void Active(string[] argumentArray = null)

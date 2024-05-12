@@ -108,7 +108,7 @@ public sealed class EquipPanel : UIPanelBase
             RoleData roleData = GameManager_.PlayerList[index].RoleData;
             _selectorArray[index].Init(() => Select(_currentIndex = index), () =>
             {
-                GameManager_.Trigger(new(GameEventType.ItemEquip, new string[] { GameManager_.PlayerList[roleData.ID].RoleData.ID.ToString(), ItemPanel.SelectItem.ID.ToString() }));
+                GameManager_.Trigger(GameEventType.ItemEquip, GameManager_.PlayerList[roleData.ID].RoleData.ID.ToString(), ItemPanel.SelectItem.ID.ToString());
                 Active();
             }, roleData.Name);
         }

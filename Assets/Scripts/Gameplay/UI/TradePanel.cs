@@ -108,7 +108,7 @@ public sealed class TradePanel : UIPanelBase
             _selectorArray[index].Init(() => Select(_currentIndex = index), () =>
             {
                 if (GameManager_.CopperAdd(-item.BoughtPrice))
-                    GameManager_.Trigger(new(GameEventType.ItemAdd, item.ID.ToString()));
+                    GameManager_.Trigger(GameEventType.ItemAdd, item.ID.ToString());
             }, item.Name, item.ID, index, item.BoughtPrice);
         }
 

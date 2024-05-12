@@ -71,7 +71,7 @@ public sealed class EscapePanel : UIPanelBase
         {
             int index = i;
 
-            _selectorArray[i].Init(() => Select(_currentIndex = index), () => GameManager_.Trigger(new(GameEventType.UIPanel, new string[] { _selectorArray[index].name, "False" })));
+            _selectorArray[i].Init(() => Select(_currentIndex = index), () => GameManager_.Trigger(GameEventType.UIPanel, _selectorArray[index].name, "False"));
         }
     }
 
@@ -82,7 +82,7 @@ public sealed class EscapePanel : UIPanelBase
         if (Input.GetKey(KeyCode.LeftControl) && Input.GetKey(KeyCode.RightControl))
         {
             if (Input.GetKeyDown(KeyCode.Alpha4))
-                GameManager_.Trigger(new(GameEventType.CopperAdd, "500"));
+                GameManager_.Trigger(GameEventType.CopperAdd, "500");
         }
     }
 

@@ -53,16 +53,22 @@ public sealed class AudioManager_ : SingletonBase<AudioManager_>
 
     private void BGPlay(string[] data)
     {
-        if (int.Parse(data[0]) != BGIndex)
+        int bgID = int.Parse(data[0]);
+
+        if (bgID != BGIndex)
         {
-            if (-1 == int.Parse(data[0]))
+            if (-2 == bgID)
             {
-                _bgAS.Stop();
+                _bgAS.UnPause();
+            }
+            else if (-1 == bgID)
+            {
+                _bgAS.Pause();
             }
             else
             {
                 _lastBGIndex = BGIndex;
-                _bgAS.clip = DataManager_.BGAudioClipArray[BGIndex = int.Parse(data[0])];
+                _bgAS.clip = DataManager_.BGAudioClipArray[BGIndex = bgID];
                 _bgAS.Play();
             }
         }

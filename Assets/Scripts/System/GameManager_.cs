@@ -27,6 +27,7 @@ public sealed class GameManager_ : SingletonBase<GameManager_>
         { GameEventType.LeaderChange, LeaderChange },
         { GameEventType.RoleFollow, (string[] data) => RoleList[int.Parse(data[0])].RoleFollow(data) },
         { GameEventType.HPAdd, (string[] data) => RoleList[int.Parse(data[0])].Trigger(RoleEffectType.HPAdd, int.Parse(data[1])) },
+        { GameEventType.MPAdd, (string[] data) => RoleList[int.Parse(data[0])].Trigger(RoleEffectType.MPAdd, int.Parse(data[1])) },
         { GameEventType.ItemUse, (string[] data) => RoleList[int.Parse(data[0])].ItemUse(data) },
         { GameEventType.ItemEquip, (string[] data) => RoleList[int.Parse(data[0])].ItemEquip(data) },
         { GameEventType.SkillLearn, (string[] data) => RoleList[int.Parse(data[0])].Trigger(RoleEffectType.SkillLearn, int.Parse(data[1])) },
@@ -109,14 +110,14 @@ public sealed class GameManager_ : SingletonBase<GameManager_>
     /// </summary>
     public static void NewGame()
     {
-        Trigger(new(GameEventType.VideoCG, "2"));
-        Trigger(new(GameEventType.MissionBegin, "0"));
-        Trigger(new(GameEventType.Curtain, new string[] { "1", "1", "0" }));
-        Trigger(new(GameEventType.GOFade, new string[] { "0", "0", "YuHang/YuHangInnRoom" }));
+        Trigger(GameEventType.VideoCG, "2");
+        Trigger(GameEventType.MissionBegin, "0");
+        Trigger(GameEventType.Curtain, "1", "1", "0");
+        Trigger(GameEventType.GOFade, "0", "0", "YuHang/YuHangInnRoom");
+        Trigger(GameEventType.RoleFade, "5", "0", "0");
 
-        for (int i = 0; i != RoleList.Count; i++) RoleList[i].DataInit();
         Clear(null);
-        Trigger(new(GameEventType.PlayerJoin, (_leaderID = 0).ToString()));
+        Trigger(GameEventType.PlayerJoin, (_leaderID = 0).ToString());
 
         /*Bag.Add(0, 88);
         Bag.Add(61, 2);
@@ -126,7 +127,7 @@ public sealed class GameManager_ : SingletonBase<GameManager_>
         if (1 == PlayerPrefs.GetInt(nameof(NewGame), 1))
         {
             PlayerPrefs.SetInt(nameof(NewGame), 0);
-            Trigger(new(GameEventType.Save, nameof(NewGame)));
+            Trigger(GameEventType.Save, nameof(NewGame));
         }
     }
 
@@ -134,8 +135,9 @@ public sealed class GameManager_ : SingletonBase<GameManager_>
     /// 清空
     /// </summary>
     /// <param name="data">数据</param>
-    public static void Clear(string[] data)
+    private static void Clear(string[] data)
     {
+        for (int i = 0; i != RoleList.Count; i++) RoleList[i].DataInit();
         for (int i = 0; i != PlayerList.Count; i++) PlayerList[i].Leave();
         PlayerList.Clear();
         Bag.Clear();
@@ -182,11 +184,11 @@ public sealed class GameManager_ : SingletonBase<GameManager_>
 
         for (int i = 0; i != PlayerList.Count; i++)
         {
-            Trigger(new GameEventData(GameEventType.RoleFollow, new string[] { PlayerList[i].RoleData.ID.ToString(), (_leaderID != PlayerList[i].RoleData.ID).ToString() }));
+            Trigger(GameEventType.RoleFollow, PlayerList[i].RoleData.ID.ToString(), (_leaderID != PlayerList[i].RoleData.ID).ToString());
         }
     }
 
-    public static void LocationChange(int locationID) => BattleGroundID = locationID;
+    private static void LocationChange(int locationID) => BattleGroundID = locationID;
 
     public static bool CopperAdd(int count)
     {
@@ -252,14 +254,24 @@ public sealed class GameManager_ : SingletonBase<GameManager_>
     public static void Register(GameEventType gameEvent, UnityAction<string[]> eventHandler) => _geHandlerDic.Add(gameEvent, eventHandler);
 
     /// <summary>
+    /// 测试优化事件触发，数组参数与可变参数性能测试
+    /// </summary>
+    /// <param name="gameEventType">类型</param>
+    /// <param name="argumentArray">参数集合</param>
+    public static void Trigger(GameEventType gameEventType, params string[] argumentArray)
+    {
+        if (null != argumentArray && 0 != argumentArray.Length) ToolsE.Log(gameEventType + "  " + argumentArray.SA2S());
+        _geHandlerDic[gameEventType](argumentArray);
+    }
+
+    /// <summary>
     /// 游戏事件触发
     /// </summary>
-    /// <param name="gameEvent">事件类型</param>
-    /// <param name="argumentArray">参数集合</param>
+    /// <param name="gameEvent">事件</param>
     public static void Trigger(GameEventData gameEvent)
     {
-        ToolsE.Log(gameEvent.GameEventType);
-        if (null != gameEvent.ArgumentArray) ToolsE.Log(gameEvent.ArgumentArray.SA2S());
+        if (null != gameEvent.ArgumentArray && 0 != gameEvent.ArgumentArray.Length)
+            ToolsE.Log(gameEvent.GameEventType + "  " + gameEvent.ArgumentArray.SA2S());
 
         _geHandlerDic[gameEvent.GameEventType](gameEvent.ArgumentArray);
     }
@@ -271,7 +283,7 @@ public sealed class GameManager_ : SingletonBase<GameManager_>
     public static void TriggerAll(GameEventData[] gameEventArray)
     {
         for (int i = 0; i != gameEventArray.Length; i++)
-            Trigger(gameEventArray[i]);
+            Trigger(gameEventArray[i].GameEventType, gameEventArray[i].ArgumentArray);
     }
 }
 
@@ -296,23 +308,10 @@ public sealed class GameEventData
     /// </summary>
     /// <param name="gameEventType">类型</param>
     /// <param name="argumentArray">参数集合</param>
-    public GameEventData(GameEventType gameEventType, string[] argumentArray = null)
+    public GameEventData(GameEventType gameEventType, params string[] argumentArray)
     {
         GameEventType = gameEventType;
         ArgumentArray = argumentArray;
-    }
-
-    /// <summary>
-    /// 构造
-    /// </summary>
-    /// <param name="gameEventType">类型</param>
-    /// <param name="argument">参数</param>
-    public GameEventData(GameEventType gameEventType, string argument)
-    {
-        //new GameEventData(gameEventType, new string[] { argument });
-
-        GameEventType = gameEventType;
-        ArgumentArray = new string[] { argument };
     }
 
     public override string ToString() => GameEventType + " : " + ArgumentArray.SA2S();
@@ -493,6 +492,11 @@ public enum GameEventType
     /// 体力增加
     /// </summary>
     HPAdd,
+
+    /// <summary>
+    /// 法力增加
+    /// </summary>
+    MPAdd,
 
     /// <summary>
     /// 仙术学习
