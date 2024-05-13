@@ -13,6 +13,10 @@ UI缺乏素材和台词面板的一些特例，头像显隐、头像位置、叠
   
 使用方法：https://public-cdn.cloud.unity3d.com/hub/prod/UnityHubSetup.exe  
 下载UnityHub然后安装新一点的引擎打开本项目即可  
+
+`所有数据存放于\PalR\Assets\Resources下`  
+剧情由Dialogue主导，从第0句罗刹鬼婆的闹钟开始，配合地图上的Trigger推进
+
 严重缺乏测试如果遇到Bug可B站知乎私信  
 存档和Bug记录全部明码放置于：C:\Users\账户名\AppData\LocalLow\Mephilas\PalR  
   
