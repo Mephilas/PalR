@@ -38,6 +38,7 @@ public sealed class GameManager_ : SingletonBase<GameManager_>
         { GameEventType.Anim, (string[] data) => RoleList[int.Parse(data[0])].Anim(data) },
         { GameEventType.SpecialAnim, (string[] data) => RoleList[int.Parse(data[0])].SpecialAnim(data) },
         { GameEventType.RoleState, (string[] data) => RoleList[int.Parse(data[0])].RoleState(data) },
+        { GameEventType.BattleSwitch, (string[] data) => RoleList[int.Parse(data[0])].RoleBattleSwitch(data) },
         { GameEventType.RoleTransfer, (string[] data) => RoleList[int.Parse(data[0])].RoleTransfer(data) },
         { GameEventType.RoleMove, (string[] data) => RoleList[int.Parse(data[0])].RoleMove(data) },
         { GameEventType.RoleRotate, (string[] data) => RoleList[int.Parse(data[0])].RoleRotate(data) },
@@ -452,6 +453,11 @@ public enum GameEventType
     /// 角色状态修改
     /// </summary>
     RoleState,
+
+    /// <summary>
+    /// 战斗开关
+    /// </summary>
+    BattleSwitch,
 
     /// <summary>
     /// 角色转移

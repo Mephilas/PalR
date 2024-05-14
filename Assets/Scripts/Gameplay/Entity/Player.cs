@@ -64,6 +64,8 @@ public sealed class Player : Role
 
     private static bool _rayHit;
 
+    private static Hostile _tempH;
+
     protected override void Awake()
     {
         base.Awake();
@@ -86,7 +88,7 @@ public sealed class Player : Role
     {
         base.OnTriggerEnter(collider);
         
-        if (GameManager_.InGame && this == GameManager_.Leader && collider.CompareTag(nameof(Hostile)))
+        if (GameManager_.InGame && this == GameManager_.Leader && collider.CompareTag(nameof(Hostile)) && (_tempH = collider.GetComponent<Hostile>()) && _tempH.BattleSwitch)
         {
             GameManager_.Trigger(GameEventType.Battle, collider.GetComponent<Hostile>().RoleData.ID.ToString());
 

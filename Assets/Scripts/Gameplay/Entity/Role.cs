@@ -78,6 +78,11 @@ public partial class Role : SpriteBase
     public int CurrentState { get; private set; }
 
     /// <summary>
+    /// 战斗开关
+    /// </summary>
+    public bool BattleSwitch { get; private set; }
+
+    /// <summary>
     /// 角色效果处理集合
     /// </summary>
     private readonly Dictionary<RoleEffectType, UnityAction<int>> RoleEffectDic = new();
@@ -291,11 +296,9 @@ public partial class Role : SpriteBase
 
     protected override void LateUpdate()
     {
-        base.LateUpdate();
-
         Follow();
 
-        if (IsMoving) SortingOrder();
+        base.LateUpdate();
     }
 
     protected override void OnTriggerEnter(Collider collider)
@@ -660,13 +663,13 @@ public partial class Role : SpriteBase
         StopCoroutine(nameof(SpecialAnimC));
         GameManager_.TriggerAll(RoleData.StateEventArray[CurrentState = int.Parse(data[1])]);
     }
+    public void RoleBattleSwitch(string[] data) => BattleSwitch = bool.Parse(data[1]);
     public void RoleTransfer(string[] data)
     {
         bool isPortal;
         if (isPortal = this == GameManager_.Leader && UIManager_.PanelCompare(UIPanel.BasicPanel)) MovementSwitch(false);
 
         Transform.localPosition = data.SA2V3().Planarization();
-        SortingOrder();
 
         if (5 == data.Length)
             GameManager_.Trigger(GameEventType.RoleRotate, RoleData.ID.ToString(), data[4]);

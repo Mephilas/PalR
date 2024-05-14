@@ -174,6 +174,8 @@ public sealed class BattleRole : Role
         _actionDic.Add(BattleActionType.JointAttack, () => StartCoroutine(nameof(SkillActionC)));
 
         GC(ref _audioS);
+
+        AdditionalWeighting = 10000;
     }
 
     protected override void Start()
@@ -193,7 +195,6 @@ public sealed class BattleRole : Role
 
         BattleDataClone(null == roleEntity ? null : RoleEntity = roleEntity);
         BattleStateAnimUpdate();
-        SortingOrder();
     }
 
     /// <summary>
@@ -442,6 +443,7 @@ public sealed class BattleRole : Role
                 _audioS.Play();
 
                 (_effect = BattleField.EffectGet()).transform.localPosition = _target.Transform.localPosition;
+                _effect.sortingOrder = _target.SpriteRenderer.sortingOrder + 1;
                 _skillAnim = DataManager_.SkillEffectList[_skillData.EffectID];
                 for (int j = 0; j != _skillAnim.Length; j++)
                 {
@@ -536,8 +538,8 @@ public sealed class BattleRole : Role
                     yield return Const.SKILL_PLAY_SPEED;
                 }
 
-                if (!_skillData.Terrain)
-                    _effect.transform.position = Const.HIDDEN_P;
+                if (_skillData.Terrain) _effect.sortingOrder = short.MinValue + 3;  //经验+3
+                else _effect.transform.position = Const.HIDDEN_P;
             }
 
             yield return Const.ANIMATION_PLAY_SPEED;
@@ -622,6 +624,7 @@ public sealed class BattleRole : Role
                     if (-1 != _skillData.EffectID)
                     {
                         (_effect = BattleField.EffectGet()).transform.localPosition = _target.Transform.localPosition;
+                        _effect.sortingOrder = _target.SpriteRenderer.sortingOrder + 1;
                         _skillAnim = DataManager_.SkillEffectList[_skillData.EffectID];
 
                         for (int j = 0; j != _skillAnim.Length; j++)
@@ -717,7 +720,8 @@ public sealed class BattleRole : Role
                             yield return Const.SKILL_PLAY_SPEED;
                         }
 
-                        if (!_skillData.Terrain) _effect.transform.position = Const.HIDDEN_P;
+                        if (_skillData.Terrain) _effect.sortingOrder = short.MinValue + 3;  //经验+3
+                        else _effect.transform.position = Const.HIDDEN_P;
                     }
                 }
                 else
@@ -906,8 +910,6 @@ public sealed class BattleRole : Role
 
         return false;
     }
-
-    protected override void SortingOrder() => SpriteRenderer.sortingOrder = (short)(Transform.localPosition.y * -100 + 30100);
 }
 
 
