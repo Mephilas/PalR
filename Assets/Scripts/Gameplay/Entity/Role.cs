@@ -48,6 +48,26 @@ public partial class Role : SpriteBase
     protected CharacterController CharacterC { get; private set; }
 
     /// <summary>
+    /// 移动向量
+    /// </summary>
+    private Vector3 _moveV;
+
+    /// <summary>
+    /// 是否移动
+    /// </summary>
+    protected bool Moving { get { return Vector3.zero != _moveV; } }
+
+    /// <summary>
+    /// 空闲判断
+    /// </summary>
+    private bool _isIdle;
+
+    /// <summary>
+    /// 射线方向
+    /// </summary>
+    protected Vector3 _rayDirection;
+
+    /// <summary>
     /// 特殊动画循环/单次
     /// </summary>
     private bool _isLoop;
@@ -294,6 +314,15 @@ public partial class Role : SpriteBase
         RoleEffectDic.Add(RoleEffectType.LuckAdd, LuckAdd);
     }
 
+    protected override void Update()
+    {
+        base.Update();
+
+        IdleCheck();
+
+        _isIdle = true;
+    }
+
     protected override void LateUpdate()
     {
         Follow();
@@ -431,9 +460,54 @@ public partial class Role : SpriteBase
     }
 
     /// <summary>
-    /// 闲置
+    /// 闲置检查
     /// </summary>
-    protected virtual void Idle() { }
+    private void IdleCheck()
+    {
+        if (CanMove && _isIdle && Moving) Idle();
+    }
+
+    protected void Idle()
+    {
+        StopCoroutine(nameof(AnimationC));
+        if (Vector3.zero != _moveV) _rayDirection = _moveV;
+        _moveV = Vector3.zero;
+        SpriteRenderer.sprite = RoleData.CurrentAnimDic[LastKeyCode][0];
+    }
+
+    /// <summary>
+    /// 输入处理
+    /// </summary>
+    /// <param name="keyCode">输入</param>
+    public void InputHandle(InputType keyCode)
+    {
+        if (!CanMove) return;
+
+        _isIdle = false;
+
+        CurrentKeyCode = keyCode;
+
+        if (Moving)
+        {
+            if (LastKeyCode != CurrentKeyCode)
+            {
+                StopCoroutine(nameof(AnimationC));
+                CurrentAnimArray = RoleData.CurrentAnimDic[CurrentKeyCode];
+                StartCoroutine(nameof(AnimationC));
+            }
+        }
+        else
+        {
+            CurrentAnimArray = RoleData.CurrentAnimDic[CurrentKeyCode];
+            StartCoroutine(nameof(AnimationC));
+        }
+
+        LastKeyCode = CurrentKeyCode;
+
+        CharacterC.Move((_moveV = MOVE_INPUT_DIC[CurrentKeyCode]).normalized * (MOVE_SPEED * Time.deltaTime));
+
+        //SortingOrder();
+    }
 
     /// <summary>
     /// 侦察
@@ -444,12 +518,6 @@ public partial class Role : SpriteBase
     /// 屏幕射线发起
     /// </summary>
     public virtual void ScreenRaycast() { }
-
-    /// <summary>
-    /// 输入处理
-    /// </summary>
-    /// <param name="keyCode">按键</param>
-    public virtual void InputHandle(InputType keyCode) { }
 
     /// <summary>
     /// 是否移动
@@ -669,7 +737,7 @@ public partial class Role : SpriteBase
         bool isPortal;
         if (isPortal = this == GameManager_.Leader && UIManager_.PanelCompare(UIPanel.BasicPanel)) MovementSwitch(false);
 
-        Transform.localPosition = data.SA2V3().Planarization();
+        Transform.localPosition = _defaultP = data.SA2V3().Planarization();
 
         if (5 == data.Length)
             GameManager_.Trigger(GameEventType.RoleRotate, RoleData.ID.ToString(), data[4]);

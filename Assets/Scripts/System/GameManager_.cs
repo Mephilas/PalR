@@ -9,6 +9,11 @@ using DG.Tweening;
 public sealed class GameManager_ : SingletonBase<GameManager_>
 {
     /// <summary>
+    /// 香持续时长
+    /// </summary>
+    private const int INCENSE = 60;
+
+    /// <summary>
     /// 地图根节点
     /// </summary>
     public const string MAP_ROOT = "Map";
@@ -105,6 +110,49 @@ public sealed class GameManager_ : SingletonBase<GameManager_>
     /// 日夜
     /// </summary>
     public static bool DayOrNight { get; private set; }
+
+    /// <summary>
+    /// 十里香
+    /// </summary>
+    public static bool Bait { get; private set; }
+
+    /// <summary>
+    /// 驱魔香
+    /// </summary>
+    public static bool Drive { get; private set; }
+
+    /// <summary>
+    /// 十里香倒计时
+    /// </summary>
+    private static int _baitCountdown = INCENSE;
+
+    /// <summary>
+    /// 驱魔香倒计时
+    /// </summary>
+    private static int _driveCountdown = INCENSE;
+
+    protected override void Update()
+    {
+        base.Update();
+
+        if (Bait)
+        {
+            if (0 == _baitCountdown--)
+            {
+                _baitCountdown = INCENSE;
+                Bait = false;
+            }
+        }
+
+        if (Drive)
+        {
+            if (0 == _driveCountdown--)
+            {
+                _driveCountdown = INCENSE;
+                Drive = false;
+            }
+        }
+    }
 
     /// <summary>
     /// 是新游戏哦
@@ -592,5 +640,5 @@ public enum GameEventType
     /// <summary>
     /// 清空游戏数据
     /// </summary>
-    Clear,
+    Clear
 }

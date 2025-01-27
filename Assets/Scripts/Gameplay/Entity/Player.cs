@@ -28,14 +28,14 @@ public sealed class Player : Role
     /// <summary>
     /// 射线方向
     /// </summary>
-    private Vector3 _rayDirection;
+    //private Vector3 _rayDirection;
 
     /// <summary>
     /// 侦测点
     /// </summary>
     private Transform _detectT;
 
-    /// <summary>
+    /*/// <summary>
     /// 移动向量
     /// </summary>
     private Vector3 _moveV;
@@ -48,8 +48,8 @@ public sealed class Player : Role
     /// <summary>
     /// 空闲判断
     /// </summary>
-    private bool _isIdle;
-
+    private bool _isIdle;*/
+    
     /// <summary>
     /// 交互目标
     /// </summary>
@@ -75,14 +75,14 @@ public sealed class Player : Role
         CGC(ref _detectT, "Head");
     }
 
-    protected override void Update()
+    /*protected override void Update()
     {
         base.Update();
 
-        IdleCheck();
+        /dleCheck();
 
         _isIdle = true;
-    }
+    }*/
 
     protected override void OnTriggerEnter(Collider collider)
     {
@@ -154,7 +154,7 @@ public sealed class Player : Role
         else ToolsE.LogWarning("Too far away:  " + Vector3.Distance(_rayTargetT.position, Transform.position));
     }
 
-    /// <summary>
+    /*/// <summary>
     /// 闲置检查
     /// </summary>
     private void IdleCheck()
@@ -202,5 +202,5 @@ public sealed class Player : Role
         CharacterC.Move((_moveV = MOVE_INPUT_DIC[CurrentKeyCode]).normalized * (MOVE_SPEED * Time.deltaTime));
 
         //SortingOrder();
-    }
+    }*/
 }
