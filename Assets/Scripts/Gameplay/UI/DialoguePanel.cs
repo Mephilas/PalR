@@ -146,5 +146,7 @@ public sealed class DialoguePanel : UIPanelBase
             GameManager_.Trigger(BASIC_PANEL_EVENT);
         else
             GameManager_.TriggerAll((_lastDialogueData = _dialogueData).EventArray);
+
+        GameManager_.Trigger(GameEventType.DialogueDone, null);
     }
 }

@@ -1,4 +1,4 @@
-using UnityEngine;
+using Vector3 = UnityEngine.Vector3;
 
 /// <summary>
 /// 角色移动
@@ -48,7 +48,7 @@ public partial class Role : SpriteBase
     private void Move2(string[] data)
     {
         _moveTargetList.Clear();
-        _moveIndex = 0;
+        _moveIndex = 1;
 
         string[] tempSA = data[1].Split(Const.SPLIT_2);
 
@@ -56,14 +56,16 @@ public partial class Role : SpriteBase
         {
             _moveTargetList.Add(tempSA[i].Split(Const.SPLIT_3).SA2V3());
         }
+
+        GameManager_.Trigger(GameEventType.RoleTransfer, RoleData.ID.ToString() + Const.SPLIT_3 + _moveTargetList[0].x + Const.SPLIT_3 + _moveTargetList[0].y + Const.SPLIT_3 + _moveTargetList[0].z);
     }
 
     /// <summary>
     /// 移动
     /// </summary>
-    private void KeepMoving()
+    private void Move2()
     {
-        if (0 != _moveTargetList.Count && _moveTargetList.Valid(_moveIndex))
+        if (!GameManager_.Talking && 0 != _moveTargetList.Count && _moveTargetList.Valid(_moveIndex))
         {
             if (STOP_DISTANCE < Vector3.Distance(Transform.localPosition, _moveTargetList[_moveIndex]))
             {

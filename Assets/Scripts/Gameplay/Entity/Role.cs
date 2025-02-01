@@ -338,9 +338,16 @@ public partial class Role : SpriteBase
 
         if (collider.gameObject.CompareTag("Portal"))
         {
-            string[] exitPath = DataManager_.PortalDataDic[ColliderPath()].Split(Const.SPLIT_1);
-            _portalP = Root_.Instance.CGC<Transform>(exitPath[0]).position;
-            GameManager_.Trigger(GameEventType.RoleTransfer, RoleData.ID.ToString(), _portalP.x.ToString(), _portalP.y.ToString(), (_portalP.z * 0.833).ToString());
+            if (this is Player)
+            {
+                string[] exitPath = DataManager_.PortalDataDic[ColliderPath()].Split(Const.SPLIT_1);
+                _portalP = Root_.Instance.CGC<Transform>(exitPath[0]).position;
+                GameManager_.Trigger(GameEventType.RoleTransfer, RoleData.ID.ToString(), _portalP.x.ToString(), _portalP.y.ToString(), (_portalP.z * 0.833).ToString());
+            }
+            else
+            {
+                GameManager_.Trigger(GameEventType.RoleState, RoleData.ID.ToString(), CurrentState.ToString());
+            }
         }
         else if (collider.gameObject.CompareTag("Trigger") && GameManager_.Leader == this)
             GameManager_.TriggerAll(DataManager_.MapEventDataDic[ColliderPath()]);

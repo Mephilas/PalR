@@ -53,7 +53,9 @@ public sealed class GameManager_ : SingletonBase<GameManager_>
         { GameEventType.Skin, (string[] data) => RoleList[int.Parse(data[0])].Skin(data) },
         { GameEventType.Pseudonym, (string[] data) => RoleList[int.Parse(data[0])].Pseudonym(data) },
         { GameEventType.DialogueIndex, (string[] data) => RoleList[int.Parse(data[0])].DialogueIndex(data) },
-        { GameEventType.Load2Player, (string[] data) => RoleList[int.Parse(data[0])].Load(data) }
+        { GameEventType.Load2Player, (string[] data) => RoleList[int.Parse(data[0])].Load(data) },
+        { GameEventType.Dialogue, (string[] data) => Talking = true },
+        { GameEventType.DialogueDone, (string[] data) => Talking = false }
     };
 
     /// <summary>
@@ -130,6 +132,11 @@ public sealed class GameManager_ : SingletonBase<GameManager_>
     /// 驱魔香倒计时
     /// </summary>
     private static int _driveCountdown = INCENSE;
+
+    /// <summary>
+    /// 对话中
+    /// </summary>
+    public static bool Talking { get; private set; }
 
     protected override void Update()
     {
@@ -300,10 +307,33 @@ public sealed class GameManager_ : SingletonBase<GameManager_>
     /// </summary>
     /// <param name="gameEvent">游戏事件</param>
     /// <param name="eventHandler">事件处理器</param>
-    public static void Register(GameEventType gameEvent, UnityAction<string[]> eventHandler) => _geHandlerDic.Add(gameEvent, eventHandler);
+    public static void Register(GameEventType gameEvent, UnityAction<string[]> eventHandler)
+    {
+        if (_geHandlerDic.ContainsKey(gameEvent))
+        {
+            _geHandlerDic[gameEvent] += eventHandler;
+        }
+        else
+        {
+            _geHandlerDic.Add(gameEvent, eventHandler);
+        }
+    }
 
     /// <summary>
-    /// 测试优化事件触发，数组参数与可变参数性能测试
+    /// 游戏事件处理器注销
+    /// </summary>
+    /// <param name="gameEvent">游戏事件</param>
+    /// <param name="eventHandler">事件处理器</param>
+    public static void RemoveRegister(GameEventType gameEvent, UnityAction<string[]> eventHandler)
+    {
+        if (_geHandlerDic.ContainsKey(gameEvent))
+        {
+            _geHandlerDic[gameEvent] -= eventHandler;
+        }
+    }
+
+    /// <summary>
+    /// 测试数组参数与可变参数性能
     /// </summary>
     /// <param name="gameEventType">类型</param>
     /// <param name="argumentArray">参数集合</param>
@@ -461,6 +491,11 @@ public enum GameEventType
     /// 台词播放
     /// </summary>
     Dialogue,
+
+    /// <summary>
+    /// 台词结束
+    /// </summary>
+    DialogueDone,
 
     /// <summary>
     /// 提示

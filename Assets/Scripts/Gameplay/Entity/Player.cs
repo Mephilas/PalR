@@ -135,7 +135,6 @@ public sealed class Player : Role
     /// <summary>
     /// 射线处理
     /// </summary>
-    /// <param name="keyboard">键/鼠</param>
     private void CastHandle()
     {
         if (Vector3.Distance(_rayTargetT.position, Transform.position) < INTERACT_DISTANCE)
