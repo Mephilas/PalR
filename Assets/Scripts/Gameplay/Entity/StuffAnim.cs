@@ -7,9 +7,9 @@ using UnityEngine;
 public class StuffAnim : Stuff
 {
     /// <summary>
-    /// 一次性
+    /// 动画循环
     /// </summary>
-    protected bool IsOneShot = true;
+    protected bool AnimLoop = true;
 
     /// <summary>
     /// 动画集合
@@ -43,7 +43,7 @@ public class StuffAnim : Stuff
 
                 yield return Const.SPECIAL_ANIMATION_PLAY_SPEED;
             }
-        } while (IsOneShot);
+        } while (AnimLoop);
 
         gameObject.SetActive(false);
         StopCoroutine(nameof(AnimC));

@@ -40,6 +40,7 @@ public sealed class GameManager_ : SingletonBase<GameManager_>
         { GameEventType.LocationChange, (string[] data) => LocationChange(int.Parse(data[0])) },
         { GameEventType.CopperAdd, (string[] data) => CopperAdd(int.Parse(data[0])) },
         { GameEventType.ItemAdd, ItemAdd },
+        { GameEventType.MoveSwitch, (string[] data) => Leader.MovementSwitch(bool.Parse(data[1])) },
         { GameEventType.Anim, (string[] data) => RoleList[int.Parse(data[0])].Anim(data) },
         { GameEventType.SpecialAnim, (string[] data) => RoleList[int.Parse(data[0])].SpecialAnim(data) },
         { GameEventType.RoleState, (string[] data) => RoleList[int.Parse(data[0])].RoleState(data) },
@@ -501,6 +502,11 @@ public enum GameEventType
     /// 提示
     /// </summary>
     Tip,
+
+    /// <summary>
+    /// 移动开关
+    /// </summary>
+    MoveSwitch,
 
     /// <summary>
     /// 动画

@@ -5,7 +5,7 @@ public sealed class StuffAnimOneShot : StuffAnim
 {
     protected override void Awake()
     {
-        IsOneShot = false;
+        AnimLoop = false;
 
         base.Awake();
     }

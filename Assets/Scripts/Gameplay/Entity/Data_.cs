@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using UnityEngine;
+using static UnityEngine.GraphicsBuffer;
 
 /// <summary>
 /// 数据基类
@@ -1365,5 +1366,37 @@ public sealed class ChooseData : DataBase
 
         AcceptEventArray = data[index++].S2GA();
         RefuseEventArray = data[index++].S2GA();
+    }
+}
+
+
+/// <summary>
+/// 载具数据
+/// </summary>
+public sealed class VehicleData : DataBase
+{
+    public readonly Vector3 Target;
+
+    /// <summary>
+    /// 离开事件
+    /// </summary>
+    public readonly GameEventData LeaveEvent;
+
+    /// <summary>
+    /// 到达事件集合
+    /// </summary>
+    public readonly GameEventData[] ReachEventArray;
+
+    /// <summary>
+    /// 构造
+    /// </summary>
+    /// <param name="data">数据</param>
+    public VehicleData(params string[] data) : base(data)
+    {
+        int index = 1;
+
+        Target = data[index++].Split(Const.SPLIT_3).SA2V3();
+        LeaveEvent = data[index++].S2GE();
+        ReachEventArray = data[index++].S2GA();
     }
 }

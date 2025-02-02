@@ -1,9 +1,7 @@
 using System;
-//using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.Video;
-//using UnityEngine.Networking;
 
 /// <summary>
 /// 数据管理器
@@ -101,6 +99,11 @@ public sealed class DataManager_ : SingletonBase<DataManager_>
     public static readonly Dictionary<string, string> PortalDataDic = new();
 
     /// <summary>
+    /// 载具事件数据集合
+    /// </summary>
+    public static readonly Dictionary<string, VehicleData> VehicleDataDic = new();
+
+    /// <summary>
     /// 角色预制体
     /// </summary>
     private static GameObject _rolePrefab;
@@ -108,7 +111,7 @@ public sealed class DataManager_ : SingletonBase<DataManager_>
     /// <summary>
     /// 角色根节点
     /// </summary>
-    private static Transform _roleParent;
+    public static Transform RoleParent { get; private set; }
 
     protected override void Awake()
     {
@@ -141,12 +144,13 @@ public sealed class DataManager_ : SingletonBase<DataManager_>
         DataLoad(SoundEffectsDic, "Audios/SoundEffects");
         MapDataLoad();
         PortalDataLoad();
+        VehicleDataLoad();
 
         //StartCoroutine(nameof(LoadFormStreamingAssets));
 
         _rolePrefab = Resources.Load<GameObject>("Prefabs/" + nameof(Role));
 
-        _roleParent = CGT(nameof(Role));
+        RoleParent = CGT(nameof(Role));
 
         for (int i = 0; i != RoleDataArray.Length; i++)
         {
@@ -266,6 +270,21 @@ public sealed class DataManager_ : SingletonBase<DataManager_>
     }
 
     /// <summary>
+    /// 地图事件数据读取
+    /// </summary>
+    private static void VehicleDataLoad()
+    {
+        string[] tempSA_0 = DataLoad("VehicleData"), tempSA_1;
+
+        for (int i = 0; i != tempSA_0.Length; i++)
+        {
+            tempSA_1 = tempSA_0[i].Split(Const.SPLIT_0);
+
+            VehicleDataDic.Add(tempSA_1[0], new(tempSA_1));
+        }
+    }
+
+    /// <summary>
     /// 仙术特效读取
     /// </summary>
     private static void SkillEffectLoad()
@@ -319,7 +338,7 @@ public sealed class DataManager_ : SingletonBase<DataManager_>
     /// <param name="id">id</param>
     private void RoleCreate2GM<T>(RoleData roleData) where T : Role
     {
-        GameManager_.RoleList.Add(RoleCreate<T>(roleData, _roleParent));
+        GameManager_.RoleList.Add(RoleCreate<T>(roleData, RoleParent));
     }
 
     /// <summary>
