@@ -105,6 +105,7 @@ public sealed class CGPanel : UIPanelBase
         _doWhite.Kill(true);
         //_rawImage.color = Color.black;
         _doBlack = _rawImage.DOColor(Color.black, COLOR_CHANGE_TIME);
+        Hide();
         GameManager_.Trigger(VIDEO_CG_EVENT_ARRAY[int.Parse(videoPlayer.clip.name)]);
     }
 
@@ -139,6 +140,7 @@ public sealed class CGPanel : UIPanelBase
             yield return Const.SEQUENCE_CG_PLAY_SPEED;
         }
 
+        Hide();
         GameManager_.Trigger(SEQUENCE_CG_EVENT_ARRAY[_sequenceCGID]);
 
         StopCoroutine(nameof(SequenceCGPlayC));
