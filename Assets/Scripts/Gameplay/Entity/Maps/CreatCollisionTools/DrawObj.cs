@@ -87,7 +87,7 @@ public class DrawObj : MonoBehaviour
             {
                 for (int j = 0; j < m_Map2.Obstacles2Ds[i].WorldVertices.Count; j++)
                 {
-                    Debug.DrawLine(m_Map2.Obstacles2Ds[i].WorldVertices[j], m_Map2.Obstacles2Ds[i].WorldVertices[(j + 1) % m_Map2.Obstacles2Ds[i].WorldVertices.Count], Color.blue);
+                    Debug.DrawLine(m_Map2.Obstacles2Ds[i].WorldVertices[j], m_Map2.Obstacles2Ds[i].WorldVertices[(j + 1) % m_Map2.Obstacles2Ds[i].WorldVertices.Count], Color.white);
                 }
             }
         }
