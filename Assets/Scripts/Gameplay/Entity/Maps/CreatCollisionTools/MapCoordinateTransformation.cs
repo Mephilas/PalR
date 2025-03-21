@@ -18,7 +18,7 @@ namespace CreatCollisionTools
             Map res = new Map();
             Angle = camAngle;
 
-            Vector3d dir = (ToolM.GetRotateMatrix(DefaultAngle,true)).MultiplyVector(new Vector3d(0, 0, 1));
+            Vector3d dir = (ToolM.GetRotateMatrix(DefaultAngle, true)).MultiplyVector(new Vector3d(0, 0, 1));
 
             for (int i = 0; i < map.Obstacles2Ds.Count; i++)
             {
@@ -27,10 +27,13 @@ namespace CreatCollisionTools
                 {
                     Vector3d point = CoordinateTrans(map.Obstacles2Ds[i].LocalVertices[j]);
                     point = MathM.Vector3DDimensionalityReduction(WorldCenter, dir, point);
+                    point.z *= 1.2f;
                     tempVertices.Add(point);
                 }
                 Vector3d positon = CoordinateTrans(map.Obstacles2Ds[i].Position);
                 positon = MathM.Vector3DDimensionalityReduction(WorldCenter, dir, positon);
+                positon.z *= 1.2f;
+                positon -= new Vector3d(-0.08f, 0, 0.035f);
                 Obstacles2D obstacles2D = new Obstacles2D(tempVertices, positon);
                 res.Obstacles2Ds.Add(obstacles2D);
             }
