@@ -83,17 +83,5 @@ namespace MathSelf
             Matrix.SetRow(3, new Vector4d(0, 0, 0, 1));
             return Matrix;
         }
-
-        /// <summary>
-        /// 世界坐标转换格子坐标
-        /// </summary>
-        /// <param name="CheckPoint"></param>
-        /// <param name=""></param>
-        /// <returns></returns>
-        public static Vector3d WorldToGridVec(Vector3d CheckPoint, Vector3d q)
-        {
-            Vector3d res = new();
-            return res;
-        }
     }
 }
