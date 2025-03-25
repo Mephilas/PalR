@@ -56,7 +56,7 @@ namespace CreatCollisionTools
             for (int i = 0; i < m_Obstacles2D.LocalVertices.Count; i++)
             {
                 points[i * 2] = m_Obstacles2D.LocalVertices[i];
-                points[i * 2 + 1] = new Vector3d(points[i * 2].x, points[i * 2].y + 5, points[i * 2].z);
+                points[i * 2 + 1] = new Vector3d(points[i * 2].x, points[i * 2].y + 1, points[i * 2].z);
             }
         }
 

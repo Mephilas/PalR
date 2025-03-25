@@ -27,14 +27,14 @@ namespace CreatCollisionTools
                 for (int j = 0; j < map.Obstacles2Ds[i].LocalVertices.Count; j++)
                 {
                     Vector3d point = CoordinateTrans(map.Obstacles2Ds[i].LocalVertices[j]);
-                    //point = MathM.Vector3DDimensionalityReduction(WorldCenter, dir, point);
-                    //point.z *= 1.2f;
+                    point = MathM.Vector3DDimensionalityReduction(WorldCenter, dir, point);
+                    point.z *= 1.2f;
                     tempVertices.Add(point);
                 }
                 Vector3d positon = CoordinateTrans(map.Obstacles2Ds[i].Position);
-                //positon = MathM.Vector3DDimensionalityReduction(WorldCenter, dir, positon);
-                //positon.z *= 1.2f;
-                //positon -= new Vector3d(-0.08f, 0, 0.035f);
+                positon = MathM.Vector3DDimensionalityReduction(WorldCenter, dir, positon);
+                positon.z *= 1.2f;
+                positon -= new Vector3d(-0.08f, 0, 0.035f);
                 Obstacles2D obstacles2D = new Obstacles2D(tempVertices, positon);
                 res.Obstacles2Ds.Add(obstacles2D);
             }

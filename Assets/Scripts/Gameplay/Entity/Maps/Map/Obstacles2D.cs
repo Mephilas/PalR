@@ -64,7 +64,7 @@ public class Obstacles2D
         }
         else
         {
-            LocalVertices = localVertices;
+            LocalVertices = new List<Vector3d>(localVertices);
         }
         Position = position;
     }
