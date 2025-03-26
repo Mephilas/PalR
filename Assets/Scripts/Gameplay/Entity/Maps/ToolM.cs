@@ -1,4 +1,5 @@
-﻿using Mathd;
+﻿using CreatCollisionTools;
+using Mathd;
 using MathSelf;
 using UnityEngine;
 using UnityEngine.UIElements;
@@ -90,51 +91,50 @@ namespace ToolSelf
         /// </summary>
         /// <param name="CheckPoint">相机平面点</param>
         /// <param name="DefaultAngle">默认相机的角度</param>
-        /// <param name="CameraAngle">相机围绕格子平面旋转的角度</param>
-        /// <param name="GridSize">格子的边长</param>
         /// <returns>返回格子坐标</returns>
-        public static Vector3d WorldToGridVec(Vector3d CheckPoint, Vector3d DefaultAngle, Vector3d CameraAngle, double GridSize)
+        public static Vector3d WorldToGridVec(Vector3d CheckPoint)
         {
-            Matrix4x4d WorldGridMI = ToolM.GetRotateMatrixI(DefaultAngle - CameraAngle, false);//格子平面映射到相机平面矩阵的逆
-            Matrix4x4d DefaultM = ToolM.GetRotateMatrix(DefaultAngle, false);//默认相机视角下的旋转矩阵，主要用于计算相机平面和格子平面的法线
+            Matrix4x4d WorldGridMI = ToolM.GetRotateMatrixI(MapCoordinateTransformation.DefaultAngle - MapCoordinateTransformation.CameraAngle, false);//格子平面映射到相机平面矩阵的逆
+            Matrix4x4d DefaultM = ToolM.GetRotateMatrix(MapCoordinateTransformation.DefaultAngle, false);//默认相机视角下的旋转矩阵，主要用于计算相机平面和格子平面的法线
             Vector3d res = CheckPoint;
             res += new Vector3d(-0.08f, 0, 0.035f);
             res.z /= 1.2;
 
 
             //这里的旋转矩阵之所以不取Y轴的旋转，是因为Y轴的旋转对于平面来说不会影响到对穿点之间的距离。
-            Matrix4x4d Camera2GridHeightM = ToolM.GetRotateMatrix(new(CameraAngle.x, 0, CameraAngle.z), false);
+            Matrix4x4d Camera2GridHeightM = ToolM.GetRotateMatrix(new(MapCoordinateTransformation.CameraAngle.x, 0, MapCoordinateTransformation.CameraAngle.z), false);
             Vector3d NorCamera = DefaultM * new Vector3d(0, 0, 1);
             Vector3d NorGrid = (Camera2GridHeightM * DefaultM * new Vector3d(0, 1, 0)).normalized;
             double CheckPointLengthNormal = Vector3d.Dot(res, NorGrid);//检查点在格子法线上的映射长度
             double MappingLengthNormals = Vector3d.Dot(NorCamera, NorGrid);//两个平面法线的映射长度
             res += CheckPointLengthNormal / MappingLengthNormals * NorCamera;
             res = WorldGridMI * res;
-            res += new Vector3d(GridSize / 2, 0, GridSize / 2);
+            res.y = 0;
+            res += new Vector3d(Map.GridSize / 2, 0, Map.GridSize / 2);
             if (res.x >= 0)
             {
-                res.x = (int)(res.x / GridSize);
+                res.x = (int)(res.x / Map.GridSize);
             }
             else
             {
-                res.x = ((int)(res.x / GridSize) - 1);
+                res.x = ((int)(res.x / Map.GridSize) - 1);
             }
 
             if (res.z >= 0)
             {
-                res.z = (int)(res.z / GridSize);
+                res.z = (int)(res.z / Map.GridSize);
             }
             else
             {
-                res.z = ((int)(res.z / GridSize) - 1);
+                res.z = ((int)(res.z / Map.GridSize) - 1);
             }
 
             return res;
         }
 
-        public static Vector3d GetWorldPosByGrid(Vector3d value, double GridSize)
+        public static Vector3d GetWorldPosByGrid(Vector3d value)
         {
-            Vector3d res = new(value.x * GridSize, 0, value.z * GridSize);
+            Vector3d res = new(value.x * Map.GridSize, 0, value.z * Map.GridSize);
             return res;
         }
 

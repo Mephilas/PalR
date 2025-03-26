@@ -10,91 +10,66 @@ using UnityEngine.UIElements;
 
 public class DrawObj : MonoBehaviour
 {
-    public Transform CheckPoint;
-    public Transform GridCenter;
-
-    public Vector3 Angle2 = new(30, 45, 0);
-    public Vector3d CameraAngle = new(30, 45, 0);
-
-    Map m_GridMap = new();
-    Map m_CameraMap = new();
+    Map m_MouseMap = new();
     Map m_SelectMap = new();
     HashSet<Vector3d> ObsSelected = new();
     ObsCreater m_ObjCreater = new();
     public GameObject m_Father;
 
-    bool flag = false;
-
-    double GridSize = 0.32 / Math.Sqrt(2);
-
-    Vector3d DefaultAngle = new(90, 0, 0);
-
     List<Vector3d> localVertices = new();
     private void Start()
     {
-        localVertices.Add(new(-GridSize / 2, 0, -GridSize / 2));
-        localVertices.Add(new(-GridSize / 2, 0, GridSize / 2));
-        localVertices.Add(new(GridSize / 2, 0, GridSize / 2));
-        localVertices.Add(new(GridSize / 2, 0, -GridSize / 2));
+        localVertices.Add(new(-Map.GridSize / 2, 0, -Map.GridSize / 2));
+        localVertices.Add(new(-Map.GridSize / 2, 0, Map.GridSize / 2));
+        localVertices.Add(new(Map.GridSize / 2, 0, Map.GridSize / 2));
+        localVertices.Add(new(Map.GridSize / 2, 0, -Map.GridSize / 2));
 
-        ObsSelected.Clear();
+        m_SelectMap.LoadMap();
+        for (int i = 0; i < m_SelectMap.Obstacles2Ds.Count; i++)
+        {
+            ObsSelected.Add(m_SelectMap.Obstacles2Ds[i].GirdPosition);
+        }
     }
     void Update()
     {
-        //这里根据相机绘制格子范围
-        Vector3d CameraPos = Camera.main.transform.position;
-        CameraPos.y = 0;
-        Vector3d CameraGridPos = ToolM.WorldToGridVec(CameraPos, DefaultAngle, CameraAngle, GridSize);
+        //交互格子
+        Vector3d mousePosition = Input.mousePosition;
+        mousePosition.z = 1f;
+        Vector3d mousePoint = Camera.main.ScreenToWorldPoint(mousePosition);
+        mousePoint.y = 0;
+        mousePoint = ToolM.WorldToGridVec(mousePoint);
 
-        m_CameraMap.Obstacles2Ds.Clear();
-        for (int i = (int)CameraGridPos.x - 10; i < CameraGridPos.x + 10; i++)
-        {
-            for (int j = (int)CameraGridPos.z - 10; j < CameraGridPos.z + 10; j++)
-            {
-                Obstacles2D obstacle0 = new(localVertices, ToolM.GetWorldPosByGrid(new(i, 0, j), GridSize));
-                m_CameraMap.Obstacles2Ds.Add(obstacle0);
-            }
-        }
-        m_CameraMap = MapCoordinateTransformation.MapTrans(m_CameraMap, CameraAngle);
-        for (int i = 0; i < m_CameraMap.Obstacles2Ds.Count; i++)
-        {
-            for (int j = 0; j < m_CameraMap.Obstacles2Ds[i].WorldVertices.Count; j++)
-            {
-                Debug.DrawLine(m_CameraMap.Obstacles2Ds[i].WorldVertices[j], m_CameraMap.Obstacles2Ds[i].WorldVertices[(j + 1) % m_CameraMap.Obstacles2Ds[i].WorldVertices.Count], Color.green);
-            }
-        }
-
-        //左键交互格子
         if (Input.GetMouseButton(0))
         {
-            Vector3d mousePosition = Input.mousePosition;
-            mousePosition.z = 1f;
-            Vector3d mousePoint = Camera.main.ScreenToWorldPoint(mousePosition);
-            mousePoint.y = 0;
-            ObsSelected.Add(ToolM.GetWorldPosByGrid(ToolM.WorldToGridVec(mousePoint, DefaultAngle, CameraAngle, GridSize), GridSize));
-            CheckPoint.transform.position = mousePoint;
+            ObsSelected.Add(mousePoint);
         }
         if (Input.GetMouseButton(1))
         {
-            Vector3d mousePosition = Input.mousePosition;
-            mousePosition.z = 1f;
-            Vector3d mousePoint = Camera.main.ScreenToWorldPoint(mousePosition);
-            mousePoint.y = 0;
-            ObsSelected.Remove(ToolM.GetWorldPosByGrid(ToolM.WorldToGridVec(mousePoint, DefaultAngle, CameraAngle, GridSize), GridSize));
+            ObsSelected.Remove(mousePoint);
         }
         m_SelectMap.Obstacles2Ds.Clear();
         foreach (var v in ObsSelected)
         {
-            Obstacles2D obstacle0 = new(localVertices, v);
+            Obstacles2D obstacle0 = new(localVertices, ToolM.GetWorldPosByGrid(v), v);
             m_SelectMap.Obstacles2Ds.Add(obstacle0);
         }
-        m_SelectMap = MapCoordinateTransformation.MapTrans(m_SelectMap, CameraAngle);
+        m_SelectMap = MapCoordinateTransformation.MapTrans(m_SelectMap);
         for (int i = 0; i < m_SelectMap.Obstacles2Ds.Count; i++)
         {
             for (int j = 0; j < m_SelectMap.Obstacles2Ds[i].WorldVertices.Count; j++)
             {
                 Debug.DrawLine(m_SelectMap.Obstacles2Ds[i].WorldVertices[j], m_SelectMap.Obstacles2Ds[i].WorldVertices[(j + 1) % m_SelectMap.Obstacles2Ds[i].WorldVertices.Count], Color.red);
             }
+            Debug.DrawLine(m_SelectMap.Obstacles2Ds[i].WorldVertices[0], m_SelectMap.Obstacles2Ds[i].WorldVertices[2], Color.red);
+            Debug.DrawLine(m_SelectMap.Obstacles2Ds[i].WorldVertices[1], m_SelectMap.Obstacles2Ds[i].WorldVertices[3], Color.red);
+        }
+
+        m_MouseMap.Obstacles2Ds.Clear();
+        m_MouseMap.Obstacles2Ds.Add(new(localVertices, ToolM.GetWorldPosByGrid(mousePoint), mousePoint));
+        m_MouseMap = MapCoordinateTransformation.MapTrans(m_MouseMap);
+        for (int j = 0; j < m_MouseMap.Obstacles2Ds[0].WorldVertices.Count; j++)
+        {
+            Debug.DrawLine(m_MouseMap.Obstacles2Ds[0].WorldVertices[j], m_MouseMap.Obstacles2Ds[0].WorldVertices[(j + 1) % m_MouseMap.Obstacles2Ds[0].WorldVertices.Count], Color.blue);
         }
 
         //碰撞体生成
@@ -114,7 +89,11 @@ public class DrawObj : MonoBehaviour
                 m_ObjCreater.CreatCollision(m_SelectMap.Obstacles2Ds[i], m_Father);
             }
         }
+
+        //保存地图
+        if (Input.GetKeyDown(KeyCode.L))
+        {
+            m_SelectMap.SaveMap();
+        }
     }
-
-
 }

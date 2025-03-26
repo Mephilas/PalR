@@ -44,19 +44,35 @@ public class Obstacles2D
         }
     }
 
+    Vector3d girdPosition;
+
+    public Vector3d GirdPosition
+    {
+        get
+        {
+            return girdPosition;
+        }
+        set
+        {
+            girdPosition = value;
+        }
+    }
+
     public Obstacles2D()
     {
         LocalVertices = new List<Vector3d>();
         Position = new Vector3d();
+        GirdPosition = new Vector3d();
     }
 
     public Obstacles2D(Obstacles2D obstacles2D)
     {
         LocalVertices = new List<Vector3d>(obstacles2D.localVertices);
         Position = obstacles2D.Position;
+        GirdPosition = obstacles2D.GirdPosition;
     }
 
-    public Obstacles2D(List<Vector3d> localVertices, Vector3d position)
+    public Obstacles2D(List<Vector3d> localVertices, Vector3d position, Vector3d girdPosition)
     {
         if (localVertices == null)
         {
@@ -67,6 +83,7 @@ public class Obstacles2D
             LocalVertices = new List<Vector3d>(localVertices);
         }
         Position = position;
+        GirdPosition = girdPosition;
     }
 
     void SetWorldVertices()
