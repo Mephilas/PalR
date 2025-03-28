@@ -25,9 +25,9 @@ public class DrawObj : MonoBehaviour
         localVertices.Add(new(Map.GridSize / 2, 0, -Map.GridSize / 2));
 
         m_SelectMap.LoadMap();
-        for (int i = 0; i < m_SelectMap.Obstacles2Ds.Count; i++)
+        foreach (var v in m_SelectMap.Obstacles2Ds)
         {
-            ObsSelected.Add(m_SelectMap.Obstacles2Ds[i].GirdPosition);
+            ObsSelected.Add(v.GirdPosition);
         }
     }
     void Update()
@@ -54,22 +54,26 @@ public class DrawObj : MonoBehaviour
             m_SelectMap.Obstacles2Ds.Add(obstacle0);
         }
         m_SelectMap = MapCoordinateTransformation.MapTrans(m_SelectMap);
-        for (int i = 0; i < m_SelectMap.Obstacles2Ds.Count; i++)
+        foreach (var v in m_SelectMap.Obstacles2Ds)
         {
-            for (int j = 0; j < m_SelectMap.Obstacles2Ds[i].WorldVertices.Count; j++)
+            for (int j = 0; j < v.WorldVertices.Count; j++)
             {
-                Debug.DrawLine(m_SelectMap.Obstacles2Ds[i].WorldVertices[j], m_SelectMap.Obstacles2Ds[i].WorldVertices[(j + 1) % m_SelectMap.Obstacles2Ds[i].WorldVertices.Count], Color.red);
+                Debug.DrawLine(v.WorldVertices[j], v.WorldVertices[(j + 1) % v.WorldVertices.Count], Color.red);
             }
-            Debug.DrawLine(m_SelectMap.Obstacles2Ds[i].WorldVertices[0], m_SelectMap.Obstacles2Ds[i].WorldVertices[2], Color.red);
-            Debug.DrawLine(m_SelectMap.Obstacles2Ds[i].WorldVertices[1], m_SelectMap.Obstacles2Ds[i].WorldVertices[3], Color.red);
+            Debug.DrawLine(v.WorldVertices[0], v.WorldVertices[2], Color.red);
+            Debug.DrawLine(v.WorldVertices[1], v.WorldVertices[3], Color.red);
         }
 
         m_MouseMap.Obstacles2Ds.Clear();
         m_MouseMap.Obstacles2Ds.Add(new(localVertices, ToolM.GetWorldPosByGrid(mousePoint), mousePoint));
         m_MouseMap = MapCoordinateTransformation.MapTrans(m_MouseMap);
-        for (int j = 0; j < m_MouseMap.Obstacles2Ds[0].WorldVertices.Count; j++)
+
+        foreach (var v in m_MouseMap.Obstacles2Ds)
         {
-            Debug.DrawLine(m_MouseMap.Obstacles2Ds[0].WorldVertices[j], m_MouseMap.Obstacles2Ds[0].WorldVertices[(j + 1) % m_MouseMap.Obstacles2Ds[0].WorldVertices.Count], Color.blue);
+            for (int j = 0; j < v.WorldVertices.Count; j++)
+            {
+                Debug.DrawLine(v.WorldVertices[j], v.WorldVertices[(j + 1) % v.WorldVertices.Count], Color.blue);
+            }
         }
 
         //碰撞体生成
@@ -84,9 +88,9 @@ public class DrawObj : MonoBehaviour
             }
 
             //创造碰撞体
-            for (int i = 0; i < m_SelectMap.Obstacles2Ds.Count; i++)
+            foreach (var v in m_SelectMap.Obstacles2Ds)
             {
-                m_ObjCreater.CreatCollision(m_SelectMap.Obstacles2Ds[i], m_Father);
+                m_ObjCreater.CreatCollision(v, m_Father);
             }
         }
 

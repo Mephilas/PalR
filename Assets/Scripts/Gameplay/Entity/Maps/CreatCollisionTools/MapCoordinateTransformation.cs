@@ -10,30 +10,29 @@ namespace CreatCollisionTools
     public static class MapCoordinateTransformation
     {
         public static Vector3d CameraAngle = new(30, 45, 0);
-        public static Vector3d DefaultAngle = new Vector3d(90, 0, 0);
-        public static Vector3d WorldCenter = new Vector3d(0, 0, 0);
+        public static Vector3d DefaultAngle = new(90, 0, 0);
+        public static Vector3d WorldCenter = new(0, 0, 0);
 
         public static Map MapTrans(Map map)
         {
             Map res = new Map();
             Vector3d dir = (ToolM.GetRotateMatrix(DefaultAngle, true)).MultiplyVector(new Vector3d(0, 0, 1));
             //Debug.Log(dir);
-
-            for (int i = 0; i < map.Obstacles2Ds.Count; i++)
+            foreach (var v in map.Obstacles2Ds)
             {
-                List<Vector3d> tempVertices = new List<Vector3d>();
-                for (int j = 0; j < map.Obstacles2Ds[i].LocalVertices.Count; j++)
+                List<Vector3d> tempVertices = new();
+                for (int j = 0; j < v.LocalVertices.Count; j++)
                 {
-                    Vector3d point = CoordinateTrans(map.Obstacles2Ds[i].LocalVertices[j]);
+                    Vector3d point = CoordinateTrans(v.LocalVertices[j]);
                     point = MathM.Vector3DDimensionalityReduction(WorldCenter, dir, point);
                     point.z *= 1.2f;
                     tempVertices.Add(point);
                 }
-                Vector3d positon = CoordinateTrans(map.Obstacles2Ds[i].Position);
+                Vector3d positon = CoordinateTrans(v.Position);
                 positon = MathM.Vector3DDimensionalityReduction(WorldCenter, dir, positon);
                 positon.z *= 1.2f;
                 positon -= new Vector3d(-0.08f, 0, 0.035f);
-                Obstacles2D obstacles2D = new Obstacles2D(tempVertices, positon, map.Obstacles2Ds[i].GirdPosition);
+                Obstacles2D obstacles2D = new Obstacles2D(tempVertices, positon, v.GirdPosition);
                 res.Obstacles2Ds.Add(obstacles2D);
             }
             return res;

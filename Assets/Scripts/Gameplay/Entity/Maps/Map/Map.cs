@@ -8,8 +8,8 @@ using UnityEngine;
 public class Map
 {
     public static double GridSize = 0.32 / Math.Sqrt(2);
-    List<Obstacles2D> obstacles2Ds;
-    public List<Obstacles2D> Obstacles2Ds
+    HashSet<Obstacles2D> obstacles2Ds;
+    public HashSet<Obstacles2D> Obstacles2Ds
     {
         get
         {
@@ -17,13 +17,13 @@ public class Map
         }
         set
         {
-            obstacles2Ds = new List<Obstacles2D>(value);
+            obstacles2Ds = new HashSet<Obstacles2D>(value);
         }
     }
 
     public Map()
     {
-        Obstacles2Ds = new List<Obstacles2D>();
+        Obstacles2Ds = new HashSet<Obstacles2D>();
     }
     public Map(Map map)
     {
@@ -33,10 +33,10 @@ public class Map
     public void SaveMap()
     {
         using BinaryWriter writer = new(File.Open(Application.persistentDataPath + "/MapEditor", FileMode.Create));
-        for (int i = 0; i < obstacles2Ds.Count; i++)
+        foreach(var v in obstacles2Ds)
         {
-            writer.Write((int)(obstacles2Ds[i].GirdPosition.x));
-            writer.Write((int)(obstacles2Ds[i].GirdPosition.z));
+            writer.Write((int)(v.GirdPosition.x));
+            writer.Write((int)(v.GirdPosition.z));
         }
     }
 
