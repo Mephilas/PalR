@@ -17,7 +17,6 @@ namespace CreatCollisionTools
         {
             Map res = new Map();
             Vector3d dir = (ToolM.GetRotateMatrix(DefaultAngle, true)).MultiplyVector(new Vector3d(0, 0, 1));
-            //Debug.Log(dir);
             foreach (var v in map.Obstacles2Ds)
             {
                 List<Vector3d> tempVertices = new();
@@ -31,8 +30,7 @@ namespace CreatCollisionTools
                 Vector3d positon = CoordinateTrans(v.Position);
                 positon = MathM.Vector3DDimensionalityReduction(WorldCenter, dir, positon);
                 positon.z *= 1.2f;
-                positon -= new Vector3d(-0.08f, 0, 0.035f);
-                Obstacles2D obstacles2D = new Obstacles2D(tempVertices, positon, v.GirdPosition);
+                Obstacles2D obstacles2D = new(tempVertices, positon, v.GirdPosition);
                 res.Obstacles2Ds.Add(obstacles2D);
             }
             return res;

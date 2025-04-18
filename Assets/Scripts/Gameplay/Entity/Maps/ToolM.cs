@@ -97,7 +97,7 @@ namespace ToolSelf
             Matrix4x4d WorldGridMI = ToolM.GetRotateMatrixI(MapCoordinateTransformation.DefaultAngle - MapCoordinateTransformation.CameraAngle, false);//格子平面映射到相机平面矩阵的逆
             Matrix4x4d DefaultM = ToolM.GetRotateMatrix(MapCoordinateTransformation.DefaultAngle, false);//默认相机视角下的旋转矩阵，主要用于计算相机平面和格子平面的法线
             Vector3d res = CheckPoint;
-            res += new Vector3d(-0.08f, 0, 0.035f);
+            //res += new Vector3d(-0.08f, 0, 0.035f);
             res.z /= 1.2;
 
 

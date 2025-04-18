@@ -20,7 +20,7 @@ namespace CreatCollisionTools
         {
             m_Obstacles2D = obstacles2D;
             mesh = new Mesh();
-            m_Creat = GameObject.Instantiate(Resources.Load<GameObject>("Prefabs/CollisionPrefab"), father.transform) ;
+            m_Creat = GameObject.Instantiate(Resources.Load<GameObject>("Prefabs/CollisionPrefab"), father.transform);
             m_Creat.name = string.Format("{0}_{1}", obstacles2D.GirdPosition.x, obstacles2D.GirdPosition.z);
             m_Creat.transform.position = obstacles2D.Position;
             SetPoints();
