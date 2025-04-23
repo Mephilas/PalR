@@ -20,18 +20,18 @@ namespace CreatCollisionTools
             foreach (var v in map.Obstacles2Ds)
             {
                 List<Vector3d> tempVertices = new();
-                for (int j = 0; j < v.LocalVertices.Count; j++)
+                for (int j = 0; j < v.Value.LocalVertices.Count; j++)
                 {
-                    Vector3d point = CoordinateTrans(v.LocalVertices[j]);
+                    Vector3d point = CoordinateTrans(v.Value.LocalVertices[j]);
                     point = MathM.Vector3DDimensionalityReduction(WorldCenter, dir, point);
                     point.z *= 1.2f;
                     tempVertices.Add(point);
                 }
-                Vector3d positon = CoordinateTrans(v.Position);
+                Vector3d positon = CoordinateTrans(v.Value.Position);
                 positon = MathM.Vector3DDimensionalityReduction(WorldCenter, dir, positon);
                 positon.z *= 1.2f;
-                Obstacles2D obstacles2D = new(tempVertices, positon, v.GirdPosition);
-                res.Obstacles2Ds.Add(obstacles2D);
+                Obstacles2D obstacles2D = new(tempVertices, positon, v.Value.GirdPosition);
+                res.Obstacles2Ds.Add(v.Value.GirdPosition,obstacles2D);
             }
             return res;
         }

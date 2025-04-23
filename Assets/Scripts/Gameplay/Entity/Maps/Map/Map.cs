@@ -8,8 +8,8 @@ using UnityEngine;
 public class Map
 {
     public static double GridSize = 0.32 / Math.Sqrt(2);
-    HashSet<Obstacles2D> obstacles2Ds;
-    public HashSet<Obstacles2D> Obstacles2Ds
+    Dictionary<Vector3d, Obstacles2D> obstacles2Ds = new();
+    public Dictionary<Vector3d, Obstacles2D> Obstacles2Ds
     {
         get
         {
@@ -17,26 +17,17 @@ public class Map
         }
         set
         {
-            obstacles2Ds = new HashSet<Obstacles2D>(value);
+            obstacles2Ds = new Dictionary<Vector3d, Obstacles2D>(value);
         }
-    }
-
-    public Map()
-    {
-        Obstacles2Ds = new HashSet<Obstacles2D>();
-    }
-    public Map(Map map)
-    {
-        Obstacles2Ds = map.Obstacles2Ds;
     }
 
     public void SaveMap()
     {
         using BinaryWriter writer = new(File.Open(Application.persistentDataPath + "/MapEditor", FileMode.Create));
-        foreach(var v in obstacles2Ds)
+        foreach (var v in obstacles2Ds)
         {
-            writer.Write((int)(v.GirdPosition.x));
-            writer.Write((int)(v.GirdPosition.z));
+            writer.Write((int)(v.Key.x));
+            writer.Write((int)(v.Key.z));
         }
     }
 
@@ -61,7 +52,7 @@ public class Map
             tempPos.x = reader.ReadInt32();
             tempPos.z = reader.ReadInt32();
             Obstacles2D obs = new(localVertices, ToolM.GetWorldPosByGrid(tempPos), tempPos);
-            obstacles2Ds.Add(obs);
+            obstacles2Ds.Add(tempPos,obs);
         }
     }
 }

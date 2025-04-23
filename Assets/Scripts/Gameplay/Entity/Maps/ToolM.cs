@@ -1,8 +1,11 @@
 ﻿using CreatCollisionTools;
 using Mathd;
 using MathSelf;
+using System.Net;
+using System;
 using UnityEngine;
 using UnityEngine.UIElements;
+using static UnityEditor.PlayerSettings;
 
 namespace ToolSelf
 {
@@ -150,6 +153,27 @@ namespace ToolSelf
             return viewportPos.x >= 0 && viewportPos.x <= 1 &&
                    viewportPos.y >= 0 && viewportPos.y <= 1 &&
                    viewportPos.z > 0; // 确保点在相机前方
+        }
+    
+        /// <summary>
+        /// 曼哈顿距离
+        /// </summary>
+        /// <param name="pos1"></param>
+        /// <param name="pos2"></param>
+        /// <returns></returns>
+        public static double GetTileDistance(Vector3d pos1, Vector3d pos2)
+        {
+            double result=0;
+            result = Math.Abs(pos1.x - pos2.x) + Math.Abs(pos1.z - pos2.z);
+            return result;
+        }
+        /// <summary>
+        /// 欧式距离
+        /// </summary>
+        /// <returns></returns>
+        public static double GetEuclideanDistance(Vector3d pos1, Vector3d pos2)
+        {
+            return (pos1 - pos2).magnitude;
         }
     }
 }

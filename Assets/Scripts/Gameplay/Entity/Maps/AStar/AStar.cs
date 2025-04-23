@@ -10,18 +10,38 @@ public class AStar
     Map Map;
     bool isDown = false;
 
-    List<AStarGrid> listReady = new();
-    public void AStarCalc(Vector3d startPoint, Vector3d endPoint, Map map)
+    List<AStarGrid> CheckList = new();
+    Dictionary<Vector3d, AStarGrid> AllGrid = new();
+    public List<Vector3d> AStarCalc(Vector3d startPoint, Vector3d endPoint, Map map)
     {
+        isDown = false;
+        List<Vector3d> result = new();
         StartPoint = startPoint;
         EndPoint = endPoint;
         Map = map;
-        listReady.Add(new(0, StartPoint, EndPoint));
+        CheckList.Clear();
+        AllGrid.Clear();
+        AStarGrid startGrid = new(StartPoint, EndPoint)
+        {
+            H = 0
+        };
+        CheckList.Add(startGrid);
+        AllGrid.Add(StartPoint, startGrid);
         for (; ; )
         {
             if (isDown)
             {
-                break;
+                AStarGrid tempGrid = AllGrid[EndPoint];
+                for (; ; )
+                {
+                    result.Add(tempGrid.Pos);
+                    Debug.Log(tempGrid.Pos);
+                    if (tempGrid.LastGrid == null)
+                    {
+                        return result;
+                    }
+                    tempGrid = tempGrid.LastGrid;
+                }
             }
             NextStep();
         }
@@ -29,14 +49,106 @@ public class AStar
 
     public void NextStep()
     {
-        
+        //先检查当前列表是否还有遍历的格子
+        if (CheckList.Count == 0)
+        {
+            isDown = true;
+            Debug.Log("无路可走！");
+            return;
+        }
+        //取出第一个格子来检查
+        AStarGrid checkGrid = CheckList[0];
+        CheckList.RemoveAt(0);
+
+        //检查当前需要查验的点是否已经是终点了
+        if (checkGrid.Pos == EndPoint)
+        {
+            isDown = true;
+            Debug.Log("找到终点了！");
+            return;
+        }
+
+        Vector3d tempVec;
+        //取上方
+        tempVec = checkGrid.Pos + new Vector3d(0, 0, 1);
+        //如果上方没有障碍物
+        if (!Map.Obstacles2Ds.ContainsKey(tempVec))
+        {
+            AddNewGrid(tempVec, checkGrid);
+        }
+        //取左方
+        tempVec = checkGrid.Pos + new Vector3d(-1, 0, 0);
+        if (!Map.Obstacles2Ds.ContainsKey(tempVec))
+        {
+            AddNewGrid(tempVec, checkGrid);
+        }
+        //取下方
+        tempVec = checkGrid.Pos + new Vector3d(0, 0, -1);
+        if (!Map.Obstacles2Ds.ContainsKey(tempVec))
+        {
+            AddNewGrid(tempVec, checkGrid);
+        }
+        //取右方
+        tempVec = checkGrid.Pos + new Vector3d(1, 0, 0);
+        if (!Map.Obstacles2Ds.ContainsKey(tempVec))
+        {
+            AddNewGrid(tempVec, checkGrid);
+        }
     }
 
-    public void AddNewSeekGrid(AStarGrid aStarGrid)
+    public AStarGrid AddNewGrid(Vector3d gridPos, AStarGrid lastGrid)
     {
-        //if ()
-        //{
+        AStarGrid tempASG;
+        if (!AllGrid.ContainsKey(gridPos))
+        {
+            tempASG = new(gridPos, EndPoint);
+            AllGrid.Add(gridPos, tempASG);
+            CheckList.Add(tempASG);
+        }
+        else
+        {
+            tempASG = AllGrid[gridPos];
+        }
 
-        //}
+        if (tempASG.SetLastGrid(lastGrid))
+        {
+            SordInsertGridToList(tempASG);
+        }
+        return AllGrid[gridPos];
+    }
+
+    public void SordInsertGridToList(AStarGrid aStarGrid)
+    {
+        //如果有这个值
+        if (CheckList.Contains(aStarGrid))
+        {
+            //先删除
+            for (int i = 0; i < CheckList.Count; i++)
+            {
+                if (CheckList[i] == aStarGrid)
+                {
+                    CheckList.RemoveAt(i);
+                }
+            }
+            //然后选择排入顺序
+            int index = 0;
+            //根据总代价排序
+            for (; index < CheckList.Count; index++)
+            {
+                if (CheckList[index].F > aStarGrid.F)
+                {
+                    break;
+                }
+                else if (CheckList[index].F == aStarGrid.F)
+                {
+                    //根据优先级排序
+                    if (CheckList[index].F >= aStarGrid.F)
+                    {
+                        break;
+                    }
+                }
+            }
+            CheckList.Insert(index, aStarGrid);
+        }
     }
 }

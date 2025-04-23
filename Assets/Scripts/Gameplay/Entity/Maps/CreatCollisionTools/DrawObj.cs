@@ -12,9 +12,11 @@ public class DrawObj : MonoBehaviour
 {
     Map m_MouseMap = new();
     Map m_SelectMap = new();
+    Map m_AStarMap = new();
     HashSet<Vector3d> ObsSelected = new();
     ObsCreater m_ObjCreater = new();
     public GameObject m_Father;
+    AStar aStar = new();
 
     List<Vector3d> localVertices = new();
     private void Start()
@@ -27,7 +29,7 @@ public class DrawObj : MonoBehaviour
         m_SelectMap.LoadMap();
         foreach (var v in m_SelectMap.Obstacles2Ds)
         {
-            ObsSelected.Add(v.GirdPosition);
+            ObsSelected.Add(v.Value.GirdPosition);
         }
     }
     void Update()
@@ -51,34 +53,35 @@ public class DrawObj : MonoBehaviour
         foreach (var v in ObsSelected)
         {
             Obstacles2D obstacle0 = new(localVertices, ToolM.GetWorldPosByGrid(v), v);
-            m_SelectMap.Obstacles2Ds.Add(obstacle0);
+            m_SelectMap.Obstacles2Ds.Add(v, obstacle0);
         }
         m_SelectMap = MapCoordinateTransformation.MapTrans(m_SelectMap);
         foreach (var v in m_SelectMap.Obstacles2Ds)
         {
-            for (int j = 0; j < v.WorldVertices.Count; j++)
+            for (int j = 0; j < v.Value.WorldVertices.Count; j++)
             {
-                Debug.DrawLine(v.WorldVertices[j], v.WorldVertices[(j + 1) % v.WorldVertices.Count], Color.red);
+                Debug.DrawLine(v.Value.WorldVertices[j], v.Value.WorldVertices[(j + 1) % v.Value.WorldVertices.Count], Color.red);
             }
-            Debug.DrawLine(v.WorldVertices[0], v.WorldVertices[2], Color.red);
-            Debug.DrawLine(v.WorldVertices[1], v.WorldVertices[3], Color.red);
+            Debug.DrawLine(v.Value.WorldVertices[0], v.Value.WorldVertices[2], Color.red);
+            Debug.DrawLine(v.Value.WorldVertices[1], v.Value.WorldVertices[3], Color.red);
         }
 
         m_MouseMap.Obstacles2Ds.Clear();
-        m_MouseMap.Obstacles2Ds.Add(new(localVertices, ToolM.GetWorldPosByGrid(mousePoint), mousePoint));
+        m_MouseMap.Obstacles2Ds.Add(mousePoint, new(localVertices, ToolM.GetWorldPosByGrid(mousePoint), mousePoint));
         m_MouseMap = MapCoordinateTransformation.MapTrans(m_MouseMap);
 
         foreach (var v in m_MouseMap.Obstacles2Ds)
         {
-            for (int j = 0; j < v.WorldVertices.Count; j++)
+            for (int j = 0; j < v.Value.WorldVertices.Count; j++)
             {
-                Debug.DrawLine(v.WorldVertices[j], v.WorldVertices[(j + 1) % v.WorldVertices.Count], Color.blue);
+                Debug.DrawLine(v.Value.WorldVertices[j], v.Value.WorldVertices[(j + 1) % v.Value.WorldVertices.Count], Color.blue);
             }
         }
 
         //碰撞体生成
         if (Input.GetKeyDown(KeyCode.K))
         {
+            Debug.Log("DrawObj:生成碰撞体");
             //删除所有子物体
             Transform tempTransform;
             for (int i = 0; i < m_Father.transform.childCount; i++)
@@ -90,14 +93,38 @@ public class DrawObj : MonoBehaviour
             //创造碰撞体
             foreach (var v in m_SelectMap.Obstacles2Ds)
             {
-                m_ObjCreater.CreatCollision(v, m_Father);
+                m_ObjCreater.CreatCollision(v.Value, m_Father);
             }
         }
 
         //保存地图
         if (Input.GetKeyDown(KeyCode.L))
         {
+            Debug.Log("DrawObj:保存地图");
             m_SelectMap.SaveMap();
+        }
+
+        ///寻路测试
+        if (Input.GetKeyDown(KeyCode.O))
+        {
+            Debug.Log("DrawObj:寻路测试");
+            //清楚上次寻路结果
+            m_AStarMap.Obstacles2Ds.Clear();
+            List<Vector3d> tempWay = aStar.AStarCalc(new(0, 0, 0), mousePoint, m_SelectMap);
+            for (int i = 0; i < tempWay.Count; i++)
+            {
+                Obstacles2D obstacle0 = new(localVertices, ToolM.GetWorldPosByGrid(tempWay[i]), tempWay[i]);
+                m_AStarMap.Obstacles2Ds.Add(tempWay[i], obstacle0);
+            }
+            m_AStarMap = MapCoordinateTransformation.MapTrans(m_AStarMap);
+        }
+        ///结果绘制
+        foreach (var v in m_AStarMap.Obstacles2Ds)
+        {
+            for (int j = 0; j < v.Value.WorldVertices.Count; j++)
+            {
+                Debug.DrawLine(v.Value.WorldVertices[j], v.Value.WorldVertices[(j + 1) % v.Value.WorldVertices.Count], Color.green);
+            }
         }
     }
 }
