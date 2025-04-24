@@ -8,13 +8,21 @@ public class AStar
     Vector3d StartPoint;
     Vector3d EndPoint;
     Map Map;
-    bool isDown = false;
 
     List<AStarGrid> CheckList = new();
     Dictionary<Vector3d, AStarGrid> AllGrid = new();
+
+
+
+    /// <summary>
+    /// 获得A*路线
+    /// </summary>
+    /// <param name="startPoint"></param>
+    /// <param name="endPoint"></param>
+    /// <param name="map"></param>
+    /// <returns></returns>
     public List<Vector3d> AStarCalc(Vector3d startPoint, Vector3d endPoint, Map map)
     {
-        isDown = false;
         List<Vector3d> result = new();
         StartPoint = startPoint;
         EndPoint = endPoint;
@@ -29,32 +37,35 @@ public class AStar
         AllGrid.Add(StartPoint, startGrid);
         for (; ; )
         {
-            if (isDown)
+            if (NextStep())
             {
                 AStarGrid tempGrid = AllGrid[EndPoint];
                 for (; ; )
                 {
                     result.Add(tempGrid.Pos);
-                    Debug.Log(tempGrid.Pos);
                     if (tempGrid.LastGrid == null)
                     {
-                        return result;
+                        break;
                     }
                     tempGrid = tempGrid.LastGrid;
                 }
+                break;
             }
-            NextStep();
         }
+        //计算拐点
+        //result = InflectionPointCalcByAStar(result);
+
+
+        return result;
     }
 
-    public void NextStep()
+    public bool NextStep()
     {
         //先检查当前列表是否还有遍历的格子
         if (CheckList.Count == 0)
         {
-            isDown = true;
             Debug.Log("无路可走！");
-            return;
+            return true;
         }
         //取出第一个格子来检查
         AStarGrid checkGrid = CheckList[0];
@@ -63,9 +74,8 @@ public class AStar
         //检查当前需要查验的点是否已经是终点了
         if (checkGrid.Pos == EndPoint)
         {
-            isDown = true;
             Debug.Log("找到终点了！");
-            return;
+            return true;
         }
 
         Vector3d tempVec;
@@ -94,6 +104,7 @@ public class AStar
         {
             AddNewGrid(tempVec, checkGrid);
         }
+        return false;
     }
 
     public AStarGrid AddNewGrid(Vector3d gridPos, AStarGrid lastGrid)
