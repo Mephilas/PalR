@@ -74,7 +74,6 @@ public class AStar
         //检查当前需要查验的点是否已经是终点了
         if (checkGrid.Pos == EndPoint)
         {
-            Debug.Log("找到终点了！");
             return true;
         }
 

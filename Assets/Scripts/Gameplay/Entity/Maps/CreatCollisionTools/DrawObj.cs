@@ -13,10 +13,12 @@ public class DrawObj : MonoBehaviour
     Map m_MouseMap = new();
     Map m_SelectMap = new();
     Map m_AStarMap = new();
+    Map m_AStarOptimize = new();
     HashSet<Vector3d> ObsSelected = new();
     ObsCreater m_ObjCreater = new();
     public GameObject m_Father;
     AStar aStar = new();
+    AStarOptimize aStarOptimize = new();
 
     List<Vector3d> localVertices = new();
     private void Start()
@@ -34,7 +36,7 @@ public class DrawObj : MonoBehaviour
     }
     void Update()
     {
-        //½»»¥¸ñ×Ó
+        //ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½
         Vector3d mousePosition = Input.mousePosition;
         mousePosition.z = 1f;
         Vector3d mousePoint = Camera.main.ScreenToWorldPoint(mousePosition);
@@ -78,11 +80,11 @@ public class DrawObj : MonoBehaviour
             }
         }
 
-        //Åö×²ÌåÉú³É
+        //ï¿½ï¿½×²ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½
         if (Input.GetKeyDown(KeyCode.K))
         {
-            Debug.Log("DrawObj:Éú³ÉÅö×²Ìå");
-            //É¾³ýËùÓÐ×ÓÎïÌå
+            Debug.Log("DrawObj:ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½×²ï¿½ï¿½");
+            //É¾ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½
             Transform tempTransform;
             for (int i = 0; i < m_Father.transform.childCount; i++)
             {
@@ -90,40 +92,60 @@ public class DrawObj : MonoBehaviour
                 Destroy(tempTransform);
             }
 
-            //´´ÔìÅö×²Ìå
+            //ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½×²ï¿½ï¿½
             foreach (var v in m_SelectMap.Obstacles2Ds)
             {
                 m_ObjCreater.CreatCollision(v.Value, m_Father);
             }
         }
 
-        //±£´æµØÍ¼
+        //ï¿½ï¿½ï¿½ï¿½ï¿½Í¼
         if (Input.GetKeyDown(KeyCode.L))
         {
-            Debug.Log("DrawObj:±£´æµØÍ¼");
+            Debug.Log("DrawObj:ï¿½ï¿½ï¿½ï¿½ï¿½Í¼");
             m_SelectMap.SaveMap();
         }
 
-        ///Ñ°Â·²âÊÔ
+        ///Ñ°Â·ï¿½ï¿½ï¿½ï¿½
         if (Input.GetKeyDown(KeyCode.O))
         {
-            Debug.Log("DrawObj:Ñ°Â·²âÊÔ");
-            //Çå³þÉÏ´ÎÑ°Â·½á¹û
+            Debug.Log("DrawObj:Ñ°Â·ï¿½ï¿½ï¿½ï¿½");
+            //ï¿½ï¿½ï¿½ï¿½Ï´ï¿½Ñ°Â·ï¿½ï¿½ï¿½
             m_AStarMap.Obstacles2Ds.Clear();
-            List<Vector3d> tempWay = aStar.AStarCalc(new(0, 0, 0), mousePoint, m_SelectMap);
+            m_AStarOptimize.Obstacles2Ds.Clear();
+            List<Vector3d> tempWay =  aStar.AStarCalc(new(0, 0, 0), mousePoint, m_SelectMap);
+            List<Vector3d> tempWay2 = aStarOptimize.InflectionPointCalcByAStar(tempWay, m_SelectMap);
+
             for (int i = 0; i < tempWay.Count; i++)
             {
                 Obstacles2D obstacle0 = new(localVertices, ToolM.GetWorldPosByGrid(tempWay[i]), tempWay[i]);
                 m_AStarMap.Obstacles2Ds.Add(tempWay[i], obstacle0);
             }
             m_AStarMap = MapCoordinateTransformation.MapTrans(m_AStarMap);
+
+            for (int i = 0; i < tempWay2.Count; i++)
+            {
+                Obstacles2D obstacle0 = new(localVertices, ToolM.GetWorldPosByGrid(tempWay2[i]), tempWay2[i]);
+                m_AStarOptimize.Obstacles2Ds.Add(tempWay2[i], obstacle0);
+            }
+            m_AStarOptimize = MapCoordinateTransformation.MapTrans(m_AStarOptimize);
         }
-        ///½á¹û»æÖÆ
+        ///ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½
         foreach (var v in m_AStarMap.Obstacles2Ds)
         {
+            Debug.DrawLine(v.Value.WorldVertices[0], v.Value.WorldVertices[2], Color.green);
+            Debug.DrawLine(v.Value.WorldVertices[1], v.Value.WorldVertices[3], Color.green);
             for (int j = 0; j < v.Value.WorldVertices.Count; j++)
             {
                 Debug.DrawLine(v.Value.WorldVertices[j], v.Value.WorldVertices[(j + 1) % v.Value.WorldVertices.Count], Color.green);
+            }
+        }
+
+        foreach (var v in m_AStarOptimize.Obstacles2Ds)
+        {
+            for (int j = 0; j < v.Value.WorldVertices.Count; j++)
+            {
+                Debug.DrawLine(v.Value.WorldVertices[j], v.Value.WorldVertices[(j + 1) % v.Value.WorldVertices.Count], Color.purple);
             }
         }
     }
