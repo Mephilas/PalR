@@ -1,12 +1,9 @@
 using CreatCollisionTools;
 using Mathd;
 using MathSelf;
-using System;
 using System.Collections.Generic;
 using ToolSelf;
-using UnityEditor;
 using UnityEngine;
-using UnityEngine.UIElements;
 
 public class DrawObj : MonoBehaviour
 {
@@ -36,7 +33,6 @@ public class DrawObj : MonoBehaviour
     }
     void Update()
     {
-        //��������
         Vector3d mousePosition = Input.mousePosition;
         mousePosition.z = 1f;
         Vector3d mousePoint = Camera.main.ScreenToWorldPoint(mousePosition);
@@ -80,11 +76,10 @@ public class DrawObj : MonoBehaviour
             }
         }
 
-        //��ײ������
+        //生成碰撞体
         if (Input.GetKeyDown(KeyCode.K))
         {
-            Debug.Log("DrawObj:������ײ��");
-            //ɾ������������
+            Debug.Log("DrawObj:生成碰撞体");
             Transform tempTransform;
             for (int i = 0; i < m_Father.transform.childCount; i++)
             {
@@ -92,28 +87,26 @@ public class DrawObj : MonoBehaviour
                 Destroy(tempTransform);
             }
 
-            //������ײ��
             foreach (var v in m_SelectMap.Obstacles2Ds)
             {
                 m_ObjCreater.CreatCollision(v.Value, m_Father);
             }
         }
 
-        //�����ͼ
+        //保存地图
         if (Input.GetKeyDown(KeyCode.L))
         {
-            Debug.Log("DrawObj:�����ͼ");
+            Debug.Log("DrawObj:保存地图");
             m_SelectMap.SaveMap();
         }
 
-        ///Ѱ·����
+        ///寻路测试
         if (Input.GetKeyDown(KeyCode.O))
         {
-            Debug.Log("DrawObj:Ѱ·����");
-            //����ϴ�Ѱ·���
+            Debug.Log("DrawObj:寻路测试");
             m_AStarMap.Obstacles2Ds.Clear();
             m_AStarOptimize.Obstacles2Ds.Clear();
-            List<Vector3d> tempWay =  aStar.AStarCalc(new(0, 0, 0), mousePoint, m_SelectMap);
+            List<Vector3d> tempWay = aStar.AStarCalc(new(0, 0, 0), mousePoint, m_SelectMap);
             List<Vector3d> tempWay2 = aStarOptimize.InflectionPointCalcByAStar(tempWay, m_SelectMap);
 
             for (int i = 0; i < tempWay.Count; i++)
@@ -130,14 +123,13 @@ public class DrawObj : MonoBehaviour
             }
             m_AStarOptimize = MapCoordinateTransformation.MapTrans(m_AStarOptimize);
         }
-        ///�������
         foreach (var v in m_AStarMap.Obstacles2Ds)
         {
-            Debug.DrawLine(v.Value.WorldVertices[0], v.Value.WorldVertices[2], Color.green);
-            Debug.DrawLine(v.Value.WorldVertices[1], v.Value.WorldVertices[3], Color.green);
+            Debug.DrawLine(v.Value.WorldVertices[0], v.Value.WorldVertices[2], new Color(135f / 255f, 206f / 255f, 235f / 255f));
+            Debug.DrawLine(v.Value.WorldVertices[1], v.Value.WorldVertices[3], new Color(135f / 255f, 206f / 255f, 235f / 255f));
             for (int j = 0; j < v.Value.WorldVertices.Count; j++)
             {
-                Debug.DrawLine(v.Value.WorldVertices[j], v.Value.WorldVertices[(j + 1) % v.Value.WorldVertices.Count], Color.green);
+                Debug.DrawLine(v.Value.WorldVertices[j], v.Value.WorldVertices[(j + 1) % v.Value.WorldVertices.Count], new Color(135f / 255f, 206f / 255f, 235f / 255f));
             }
         }
 

@@ -49,7 +49,7 @@ public class AStarGrid
     {
         Pos = pos;
         //这里决定预估代价的计算方式
-        G = ToolM.GetEuclideanDistance(endPos, pos);
+        G = ToolM.GetTileDistance(endPos, pos);
         //这里决定优先级计算方式
         //P = Math.Abs(Math.Abs(endPos.x - Pos.x) - Math.Abs(endPos.z - Pos.z));
         P = 0;
