@@ -17,7 +17,7 @@ public class AStarOptimize
     /// </summary>
     /// <param name="aStarList"></param>
     /// <returns></returns>
-    public List<Vector3d> InflectionPointCalcByAStar(List<Vector3d> aStarList, Map map)
+    public List<Vector3d> InflectionPointCalcByAStar(List<Vector3d> aStarList, Map map,ref  List<Vector3d> guaidian)
     {
         Map = map;
         bool isDown = false;
@@ -105,6 +105,7 @@ public class AStarOptimize
         }
         List<Vector3d> result = new();
         result.Add(InflectionPointList[0]);
+        guaidian = new(InflectionPointList);
         for (int i = InflectionPointList.Count - 1; i > 0; i--)
         {
             result.AddRange(CalcPathList(InflectionPointList[i], InflectionPointList[i - 1]));
@@ -167,18 +168,30 @@ public class AStarOptimize
             if (dir1 > dir2)
             {
                 //dir1更贴合原斜率
-                if (!Map.Obstacles2Ds.ContainsKey(tempCheck1))
-                {
+                //if (!Map.Obstacles2Ds.ContainsKey(tempCheck1))
+                //{
                     tempPos = tempCheck1;
-                }
+                //}
+                //else
+                //{
+                //    Debug.LogError(tempCheck1);
+                //    Debug.LogError("炸了！");
+                //    return resultList;
+                //}
             }
             else if (dir1 < dir2)
             {
                 //dir2更贴合原斜率
-                if (!Map.Obstacles2Ds.ContainsKey(tempCheck2))
-                {
+                //if (!Map.Obstacles2Ds.ContainsKey(tempCheck2))
+                //{
                     tempPos = tempCheck2;
-                }
+                //}
+                //else
+                //{
+                //    Debug.LogError(tempCheck1);
+                //    Debug.LogError("炸了！");
+                //    return resultList;
+                //}
             }
             else
             {
@@ -188,29 +201,29 @@ public class AStarOptimize
                 double dis2 = (tempCheck2 - endPoint).magnitude;
                 if (dis1 < dis2)
                 {
-                    if (!Map.Obstacles2Ds.ContainsKey(tempCheck1))
-                    {
+                    //if (!Map.Obstacles2Ds.ContainsKey(tempCheck1))
+                    //{
                         tempPos = tempCheck1;
-                    }
-                    else
-                    {
-                        Debug.LogError(tempCheck1);
-                        Debug.LogError("炸了！");
-                        return resultList;
-                    }
+                    //}
+                    //else
+                    //{
+                    //    Debug.LogError(tempCheck1);
+                    //    Debug.LogError("炸了！");
+                    //    return resultList;
+                    //}
                 }
                 else if (dis2 < dis1)
                 {
-                    if (!Map.Obstacles2Ds.ContainsKey(tempCheck2))
-                    {
+                    //if (!Map.Obstacles2Ds.ContainsKey(tempCheck2))
+                    //{
                         tempPos = tempCheck2;
-                    }
-                    else
-                    {
-                        Debug.LogError(tempCheck2);
-                        Debug.LogError("炸了！");
-                        return resultList;
-                    }
+                    //}
+                    //else
+                    //{
+                    //    Debug.LogError(tempCheck2);
+                    //    Debug.LogError("炸了！");
+                    //    return resultList;
+                    //}
                 }
                 else
                 {
@@ -220,17 +233,17 @@ public class AStarOptimize
                     {
                         tempPos = tempCheck1;
                     }
-                    else if (!Map.Obstacles2Ds.ContainsKey(tempCheck2))
-                    {
+                    //else if (!Map.Obstacles2Ds.ContainsKey(tempCheck2))
+                    //{
                         tempPos = tempCheck2;
-                    }
-                    else
-                    {
-                        Debug.LogError(tempCheck1);
-                        Debug.LogError(tempCheck2);
-                        Debug.LogError("炸了！");
-                        return resultList;
-                    }
+                    //}
+                    //else
+                    //{
+                    //    Debug.LogError(tempCheck1);
+                    //    Debug.LogError(tempCheck2);
+                    //    Debug.LogError("炸了！");
+                    //    return resultList;
+                    //}
                 }
             }
         }

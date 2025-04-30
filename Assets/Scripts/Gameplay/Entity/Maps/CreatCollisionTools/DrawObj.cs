@@ -1,6 +1,7 @@
 using CreatCollisionTools;
 using Mathd;
 using MathSelf;
+using System;
 using System.Collections.Generic;
 using ToolSelf;
 using UnityEngine;
@@ -11,6 +12,7 @@ public class DrawObj : MonoBehaviour
     Map m_SelectMap = new();
     Map m_AStarMap = new();
     Map m_AStarOptimize = new();
+    Vector3d startAStar = new();
     HashSet<Vector3d> ObsSelected = new();
     ObsCreater m_ObjCreater = new();
     public GameObject m_Father;
@@ -31,6 +33,9 @@ public class DrawObj : MonoBehaviour
             ObsSelected.Add(v.Value.GirdPosition);
         }
     }
+    int indexs = 0;
+    List<Vector3d> tempWay = new();
+    List<Vector3d> tempWay2 = new();
     void Update()
     {
         Vector3d mousePosition = Input.mousePosition;
@@ -99,15 +104,18 @@ public class DrawObj : MonoBehaviour
             Debug.Log("DrawObj:保存地图");
             m_SelectMap.SaveMap();
         }
+        if (Input.GetKeyDown(KeyCode.I))
+        {
+            startAStar = mousePoint;
+            indexs = 1;
+        }
 
         ///寻路测试
         if (Input.GetKeyDown(KeyCode.O))
         {
             Debug.Log("DrawObj:寻路测试");
             m_AStarMap.Obstacles2Ds.Clear();
-            m_AStarOptimize.Obstacles2Ds.Clear();
-            List<Vector3d> tempWay = aStar.AStarCalc(new(0, 0, 0), mousePoint, m_SelectMap);
-            List<Vector3d> tempWay2 = aStarOptimize.InflectionPointCalcByAStar(tempWay, m_SelectMap);
+            tempWay = aStar.AStarCalc(startAStar, mousePoint, m_SelectMap);
 
             for (int i = 0; i < tempWay.Count; i++)
             {
@@ -115,6 +123,18 @@ public class DrawObj : MonoBehaviour
                 m_AStarMap.Obstacles2Ds.Add(tempWay[i], obstacle0);
             }
             m_AStarMap = MapCoordinateTransformation.MapTrans(m_AStarMap);
+        }
+        if (Input.GetKeyDown(KeyCode.P))
+        {
+            Debug.Log("DrawObj:寻路测试");
+            m_AStarOptimize.Obstacles2Ds.Clear();
+            m_AStarMap.Obstacles2Ds.Clear();
+            indexs++;
+            //List<Vector3d> tempList3 = tempWay.GetRange(0, indexs);
+            //tempWay2 = aStarOptimize.CalcPathList(new Vector3d(90, 0, 228), new Vector3d(115, 0, 248));
+            //tempWay2 = aStarOptimize.CalcPathList(tempWay, new Vector3d(115, 0, 248));
+            List<Vector3d> tempList3 = new();
+            tempWay2 = aStarOptimize.InflectionPointCalcByAStar(tempWay, m_SelectMap, ref tempList3);
 
             for (int i = 0; i < tempWay2.Count; i++)
             {
@@ -122,6 +142,17 @@ public class DrawObj : MonoBehaviour
                 m_AStarOptimize.Obstacles2Ds.Add(tempWay2[i], obstacle0);
             }
             m_AStarOptimize = MapCoordinateTransformation.MapTrans(m_AStarOptimize);
+
+            for (int i = 0; i < tempList3.Count; i++)
+            {
+                Obstacles2D obstacle0 = new(localVertices, ToolM.GetWorldPosByGrid(tempList3[i]), tempList3[i]);
+                
+                if (!m_AStarMap.Obstacles2Ds!.ContainsKey(tempList3[i]))
+                {
+                    m_AStarMap.Obstacles2Ds.Add(tempList3[i], obstacle0);
+                }
+            }
+            m_AStarMap = MapCoordinateTransformation.MapTrans(m_AStarMap);
         }
         foreach (var v in m_AStarMap.Obstacles2Ds)
         {
