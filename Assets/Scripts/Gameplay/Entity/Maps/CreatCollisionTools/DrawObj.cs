@@ -3,6 +3,7 @@ using Mathd;
 using MathSelf;
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using ToolSelf;
 using UnityEngine;
 
@@ -17,7 +18,7 @@ public class DrawObj : MonoBehaviour
     ObsCreater m_ObjCreater = new();
     public GameObject m_Father;
     AStar aStar = new();
-    AStarOptimize aStarOptimize = new();
+    AStarOptimize2 aStarOptimize = new();
 
     List<Vector3d> localVertices = new();
     private void Start()
@@ -116,7 +117,7 @@ public class DrawObj : MonoBehaviour
             Debug.Log("DrawObj:寻路测试");
             m_AStarMap.Obstacles2Ds.Clear();
             tempWay = aStar.AStarCalc(startAStar, mousePoint, m_SelectMap);
-
+            tempWay2 = new(tempWay);
             for (int i = 0; i < tempWay.Count; i++)
             {
                 Obstacles2D obstacle0 = new(localVertices, ToolM.GetWorldPosByGrid(tempWay[i]), tempWay[i]);
@@ -128,13 +129,18 @@ public class DrawObj : MonoBehaviour
         {
             Debug.Log("DrawObj:寻路测试");
             m_AStarOptimize.Obstacles2Ds.Clear();
-            m_AStarMap.Obstacles2Ds.Clear();
             indexs++;
             //List<Vector3d> tempList3 = tempWay.GetRange(0, indexs);
             //tempWay2 = aStarOptimize.CalcPathList(new Vector3d(90, 0, 228), new Vector3d(115, 0, 248));
             //tempWay2 = aStarOptimize.CalcPathList(tempWay, new Vector3d(115, 0, 248));
-            List<Vector3d> tempList3 = new();
-            tempWay2 = aStarOptimize.InflectionPointCalcByAStar(tempWay, m_SelectMap, ref tempList3);
+            //aStarOptimize.Init(tempWay2, m_SelectMap);
+            List<OptimizeGrid> tempgridlist = aStarOptimize.NextStep();
+            tempWay2.Clear();
+            for (int i = 0; i < tempgridlist.Count; i++)
+            {
+                tempWay2.Add(tempgridlist[i].TargetPos);
+            }
+            tempWay2 = tempWay2.ToHashSet().ToList();
 
             for (int i = 0; i < tempWay2.Count; i++)
             {
@@ -142,17 +148,6 @@ public class DrawObj : MonoBehaviour
                 m_AStarOptimize.Obstacles2Ds.Add(tempWay2[i], obstacle0);
             }
             m_AStarOptimize = MapCoordinateTransformation.MapTrans(m_AStarOptimize);
-
-            for (int i = 0; i < tempList3.Count; i++)
-            {
-                Obstacles2D obstacle0 = new(localVertices, ToolM.GetWorldPosByGrid(tempList3[i]), tempList3[i]);
-                
-                if (!m_AStarMap.Obstacles2Ds!.ContainsKey(tempList3[i]))
-                {
-                    m_AStarMap.Obstacles2Ds.Add(tempList3[i], obstacle0);
-                }
-            }
-            m_AStarMap = MapCoordinateTransformation.MapTrans(m_AStarMap);
         }
         foreach (var v in m_AStarMap.Obstacles2Ds)
         {

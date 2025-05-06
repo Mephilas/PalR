@@ -17,7 +17,7 @@ public class AStarOptimize
     /// </summary>
     /// <param name="aStarList"></param>
     /// <returns></returns>
-    public List<Vector3d> InflectionPointCalcByAStar(List<Vector3d> aStarList, Map map,ref  List<Vector3d> guaidian)
+    public List<Vector3d> InflectionPointCalcByAStar(List<Vector3d> aStarList, Map map)
     {
         Map = map;
         bool isDown = false;
@@ -105,12 +105,60 @@ public class AStarOptimize
         }
         List<Vector3d> result = new();
         result.Add(InflectionPointList[0]);
-        guaidian = new(InflectionPointList);
         for (int i = InflectionPointList.Count - 1; i > 0; i--)
         {
             result.AddRange(CalcPathList(InflectionPointList[i], InflectionPointList[i - 1]));
         }
         return result;
+    }
+
+    public List<Vector3d> InflectionPointCalcByAStar2(List<Vector3d> aStarList, Map map)
+    {
+        Map = map;
+        List<Vector3d> InflectionPointList = new(aStarList);
+        int index = 0;
+        for (; ; )
+        {
+            if (index == aStarList.Count - 1)
+            {
+                break;
+            }
+            for (int j = aStarList.Count - 1; j > index; j--)
+            {
+                Vector3d tempVec = CheckObsBy2Point(aStarList[index], aStarList[j]);
+                if (tempVec == aStarList[index])
+                {
+                    //如果没有碰撞成功拉成了直线
+                    //首先判断新直线是否与原来的直线完全相同
+
+                    List<Vector3d> tempList = CalcPathList(aStarList[index], aStarList[j]);
+                    if (Check2LineSame(tempList, aStarList.GetRange(index, j - index)))
+                    {
+                        //如果完全一样，则进行下一个点的判断
+                        index++;
+                    }
+                    else
+                    {
+                        //如果两条线不匹配说明需要优化线路
+                        //首先优化线路
+                        for (int i = 0; i < tempList.Count; i++)
+                        {
+                            aStarList[index + i] = tempList[i];
+                        }
+                        //修改索引
+                        index = j;
+                    }
+                    break;
+                }
+                else
+                {
+                    //如果碰撞了，则继续倒叙遍历下一个点
+                    continue;
+                }
+            }
+        }
+
+        return aStarList;
     }
 
     /// <summary>
@@ -167,31 +215,11 @@ public class AStarOptimize
 
             if (dir1 > dir2)
             {
-                //dir1更贴合原斜率
-                //if (!Map.Obstacles2Ds.ContainsKey(tempCheck1))
-                //{
-                    tempPos = tempCheck1;
-                //}
-                //else
-                //{
-                //    Debug.LogError(tempCheck1);
-                //    Debug.LogError("炸了！");
-                //    return resultList;
-                //}
+                tempPos = tempCheck1;
             }
             else if (dir1 < dir2)
             {
-                //dir2更贴合原斜率
-                //if (!Map.Obstacles2Ds.ContainsKey(tempCheck2))
-                //{
-                    tempPos = tempCheck2;
-                //}
-                //else
-                //{
-                //    Debug.LogError(tempCheck1);
-                //    Debug.LogError("炸了！");
-                //    return resultList;
-                //}
+                tempPos = tempCheck2;
             }
             else
             {
@@ -201,29 +229,11 @@ public class AStarOptimize
                 double dis2 = (tempCheck2 - endPoint).magnitude;
                 if (dis1 < dis2)
                 {
-                    //if (!Map.Obstacles2Ds.ContainsKey(tempCheck1))
-                    //{
-                        tempPos = tempCheck1;
-                    //}
-                    //else
-                    //{
-                    //    Debug.LogError(tempCheck1);
-                    //    Debug.LogError("炸了！");
-                    //    return resultList;
-                    //}
+                    tempPos = tempCheck1;
                 }
                 else if (dis2 < dis1)
                 {
-                    //if (!Map.Obstacles2Ds.ContainsKey(tempCheck2))
-                    //{
-                        tempPos = tempCheck2;
-                    //}
-                    //else
-                    //{
-                    //    Debug.LogError(tempCheck2);
-                    //    Debug.LogError("炸了！");
-                    //    return resultList;
-                    //}
+                    tempPos = tempCheck2;
                 }
                 else
                 {
@@ -233,17 +243,10 @@ public class AStarOptimize
                     {
                         tempPos = tempCheck1;
                     }
-                    //else if (!Map.Obstacles2Ds.ContainsKey(tempCheck2))
-                    //{
+                    else
+                    {
                         tempPos = tempCheck2;
-                    //}
-                    //else
-                    //{
-                    //    Debug.LogError(tempCheck1);
-                    //    Debug.LogError(tempCheck2);
-                    //    Debug.LogError("炸了！");
-                    //    return resultList;
-                    //}
+                    }
                 }
             }
         }
@@ -374,59 +377,20 @@ public class AStarOptimize
         return startPoint;
     }
 
-    public AStarGrid AddNewGrid(Vector3d gridPos, AStarGrid lastGrid)
+    public bool Check2LineSame(List<Vector3d> line1, List<Vector3d> line2)
     {
-        AStarGrid tempASG;
-        if (!AllGrid.ContainsKey(gridPos))
+        if (line1.Count != line2.Count)
         {
-            tempASG = new(gridPos, EndPoint);
-            AllGrid.Add(gridPos, tempASG);
-            CheckList.Add(tempASG);
+            Debug.LogError("错误！两条线不一样长！");
+            return false;
         }
-        else
+        for (int i = 0; i < line1.Count; i++)
         {
-            tempASG = AllGrid[gridPos];
-        }
-
-        if (tempASG.SetLastGrid(lastGrid))
-        {
-            SordInsertGridToList(tempASG);
-        }
-        return AllGrid[gridPos];
-    }
-
-    public void SordInsertGridToList(AStarGrid aStarGrid)
-    {
-        //如果有这个值
-        if (CheckList.Contains(aStarGrid))
-        {
-            //先删除
-            for (int i = 0; i < CheckList.Count; i++)
+            if (line1[i] != line2[i])
             {
-                if (CheckList[i] == aStarGrid)
-                {
-                    CheckList.RemoveAt(i);
-                }
+                return false;
             }
-            //然后选择排入顺序
-            int index = 0;
-            //根据总代价排序
-            for (; index < CheckList.Count; index++)
-            {
-                if (CheckList[index].F > aStarGrid.F)
-                {
-                    break;
-                }
-                else if (CheckList[index].F == aStarGrid.F)
-                {
-                    //根据优先级排序
-                    if (CheckList[index].F >= aStarGrid.F)
-                    {
-                        break;
-                    }
-                }
-            }
-            CheckList.Insert(index, aStarGrid);
         }
+        return true;
     }
 }
