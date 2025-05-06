@@ -130,17 +130,14 @@ public class DrawObj : MonoBehaviour
             Debug.Log("DrawObj:寻路测试");
             m_AStarOptimize.Obstacles2Ds.Clear();
             indexs++;
-            //List<Vector3d> tempList3 = tempWay.GetRange(0, indexs);
-            //tempWay2 = aStarOptimize.CalcPathList(new Vector3d(90, 0, 228), new Vector3d(115, 0, 248));
-            //tempWay2 = aStarOptimize.CalcPathList(tempWay, new Vector3d(115, 0, 248));
-            //aStarOptimize.Init(tempWay2, m_SelectMap);
+            aStarOptimize.Init(tempWay2, m_SelectMap);
             List<OptimizeGrid> tempgridlist = aStarOptimize.NextStep();
             tempWay2.Clear();
             for (int i = 0; i < tempgridlist.Count; i++)
             {
-                tempWay2.Add(tempgridlist[i].TargetPos);
+                tempWay2.Add(tempgridlist[i].Pos);
             }
-            tempWay2 = tempWay2.ToHashSet().ToList();
+            //tempWay2 = tempWay2.ToHashSet().ToList();
 
             for (int i = 0; i < tempWay2.Count; i++)
             {
@@ -163,7 +160,7 @@ public class DrawObj : MonoBehaviour
         {
             for (int j = 0; j < v.Value.WorldVertices.Count; j++)
             {
-                Debug.DrawLine(v.Value.WorldVertices[j], v.Value.WorldVertices[(j + 1) % v.Value.WorldVertices.Count], Color.purple);
+                Debug.DrawLine(v.Value.WorldVertices[j], v.Value.WorldVertices[(j + 1) % v.Value.WorldVertices.Count], Color.yellow);
             }
         }
     }
