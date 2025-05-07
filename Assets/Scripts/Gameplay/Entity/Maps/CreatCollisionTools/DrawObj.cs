@@ -13,6 +13,7 @@ public class DrawObj : MonoBehaviour
     Map m_SelectMap = new();
     Map m_AStarMap = new();
     Map m_AStarOptimize = new();
+    Map m_AStarOptimize2 = new();
     Vector3d startAStar = new();
     HashSet<Vector3d> ObsSelected = new();
     ObsCreater m_ObjCreater = new();
@@ -34,9 +35,9 @@ public class DrawObj : MonoBehaviour
             ObsSelected.Add(v.Value.GirdPosition);
         }
     }
-    int indexs = 0;
     List<Vector3d> tempWay = new();
     List<Vector3d> tempWay2 = new();
+    List<Vector3d> tempWay3 = new();
     void Update()
     {
         Vector3d mousePosition = Input.mousePosition;
@@ -108,7 +109,6 @@ public class DrawObj : MonoBehaviour
         if (Input.GetKeyDown(KeyCode.I))
         {
             startAStar = mousePoint;
-            indexs = 1;
         }
 
         ///寻路测试
@@ -116,7 +116,7 @@ public class DrawObj : MonoBehaviour
         {
             Debug.Log("DrawObj:寻路测试");
             m_AStarMap.Obstacles2Ds.Clear();
-            tempWay = aStar.AStarCalc(startAStar, mousePoint, m_SelectMap);
+            tempWay = aStar.AStarCalc(new Vector3d(88, 0, 227), new Vector3d(128, 0, 279), m_SelectMap);
             tempWay2 = new(tempWay);
             for (int i = 0; i < tempWay.Count; i++)
             {
@@ -124,20 +124,33 @@ public class DrawObj : MonoBehaviour
                 m_AStarMap.Obstacles2Ds.Add(tempWay[i], obstacle0);
             }
             m_AStarMap = MapCoordinateTransformation.MapTrans(m_AStarMap);
+
+            aStarOptimize.Init(tempWay2, m_SelectMap);
         }
         if (Input.GetKeyDown(KeyCode.P))
         {
-            Debug.Log("DrawObj:寻路测试");
+            Debug.Log("DrawObj:优化测试");
+            m_AStarMap.Obstacles2Ds.Clear();
             m_AStarOptimize.Obstacles2Ds.Clear();
-            indexs++;
-            aStarOptimize.Init(tempWay2, m_SelectMap);
-            List<OptimizeGrid> tempgridlist = aStarOptimize.NextStep();
+            m_AStarOptimize2.Obstacles2Ds.Clear();
+            List<OptimizePoint> tempgridlist2 = new();
+            HashSet<Vector3d> tempVec = new();
+            List<OptimizePoint> tempgridlist = aStarOptimize.NextStep(ref tempgridlist2, ref tempVec);
             tempWay2.Clear();
             for (int i = 0; i < tempgridlist.Count; i++)
             {
                 tempWay2.Add(tempgridlist[i].Pos);
             }
-            //tempWay2 = tempWay2.ToHashSet().ToList();
+
+
+            tempWay3.Clear();
+            for (int i = 0; i < tempgridlist2.Count; i++)
+            {
+                tempWay3.Add(tempgridlist2[i].Pos);
+            }
+
+            tempWay.Clear();
+            tempWay = new(tempVec.ToList());
 
             for (int i = 0; i < tempWay2.Count; i++)
             {
@@ -145,7 +158,22 @@ public class DrawObj : MonoBehaviour
                 m_AStarOptimize.Obstacles2Ds.Add(tempWay2[i], obstacle0);
             }
             m_AStarOptimize = MapCoordinateTransformation.MapTrans(m_AStarOptimize);
+
+            for (int i = 0; i < tempWay.Count; i++)
+            {
+                Obstacles2D obstacle0 = new(localVertices, ToolM.GetWorldPosByGrid(tempWay[i]), tempWay[i]);
+                m_AStarMap.Obstacles2Ds.Add(tempWay[i], obstacle0);
+            }
+            m_AStarMap = MapCoordinateTransformation.MapTrans(m_AStarMap);
+
+            for (int i = 0; i < tempWay3.Count; i++)
+            {
+                Obstacles2D obstacle0 = new(localVertices, ToolM.GetWorldPosByGrid(tempWay3[i]), tempWay3[i]);
+                m_AStarOptimize2.Obstacles2Ds.Add(tempWay3[i], obstacle0);
+            }
+            m_AStarOptimize2 = MapCoordinateTransformation.MapTrans(m_AStarOptimize2);
         }
+
         foreach (var v in m_AStarMap.Obstacles2Ds)
         {
             Debug.DrawLine(v.Value.WorldVertices[0], v.Value.WorldVertices[2], new Color(135f / 255f, 206f / 255f, 235f / 255f));
@@ -161,6 +189,14 @@ public class DrawObj : MonoBehaviour
             for (int j = 0; j < v.Value.WorldVertices.Count; j++)
             {
                 Debug.DrawLine(v.Value.WorldVertices[j], v.Value.WorldVertices[(j + 1) % v.Value.WorldVertices.Count], Color.yellow);
+            }
+        }
+
+        foreach (var v in m_AStarOptimize2.Obstacles2Ds)
+        {
+            for (int j = 0; j < v.Value.WorldVertices.Count; j++)
+            {
+                Debug.DrawLine(v.Value.WorldVertices[j], v.Value.WorldVertices[(j + 1) % v.Value.WorldVertices.Count], Color.blue);
             }
         }
     }

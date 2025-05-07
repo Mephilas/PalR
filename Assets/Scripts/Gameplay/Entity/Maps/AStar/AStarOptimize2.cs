@@ -1,72 +1,116 @@
 using Mathd;
 using System.Collections.Generic;
+using System.Linq;
 using System.Net;
 using UnityEngine;
 
 public class AStarOptimize2
 {
     Map Map = new();
-    List<OptimizeGrid> result = new();
+    List<OptimizePoint> result = new();
 
-    public void Init(List<Vector3d> aStarList, Map map)
+    public List<OptimizePoint> Init(List<Vector3d> aStarList, Map map)
     {
+        index = 0;
+
         Map = map;
         result.Clear();
         for (int i = 0; i < aStarList.Count; i++)
         {
             result.Add(new(aStarList[i], new(0, 0, 0), false));
         }
+        //NextStep();
+        return result;
     }
-
-    public List<OptimizeGrid> NextStep()
+    int index = 0;
+    //HashSet<Vector3d> tempHashSet = new();
+    public List<OptimizePoint> NextStep(ref List<OptimizePoint> tempList, ref HashSet<Vector3d> tempHashSet)
     {
-        int index = 0;
-        for (; ; )
+        tempHashSet.Clear();
+        //如果遍历到了最后一个点，则跳出循环
+        if (result[index].TargetPos == result[^1].Pos)
         {
-            //如果遍历到了最后一个点，则跳出循环
-            if (index == result.Count - 1)
+            index = 0;
+            return result;
+        }
+        for (int j = result.Count - 1; j > index; j--)
+        {
+            tempList.Clear();
+            Vector3d inflectionPoint = new();
+            //如果当前点是线段点且点的目标点就是当前遍历点
+            if (result[index].HasTarget && result[index].TargetPos == result[j].Pos)
             {
-                break;
+                //如果完全一致，则判断下一个点
+                index++;
+
+                tempList = result.GetRange(index, j - index);
+                return result;
             }
-            for (int j = result.Count - 1; j > index; j--)
+            //如果两点之间存在障碍物，则跳至下一个遍历点
+            if (!CheckObsBy2Point(result[index].Pos, result[j].Pos, ref tempList, ref inflectionPoint))
             {
-                //如果当前点是线段点且点的目标点就是当前遍历点
-                if (result[index].HasTarget && result[index].TargetPos == result[j].Pos)
+                //有障碍物，下一个遍历点
+                //这里要记录障碍点，如果下一条线连通了则要判断拐点位置
+                tempHashSet.Clear();
+                tempHashSet.Add(inflectionPoint + new Vector3d(1, 0, 1));
+                tempHashSet.Add(inflectionPoint + new Vector3d(1, 0, -1));
+                tempHashSet.Add(inflectionPoint + new Vector3d(-1, 0, 1));
+                tempHashSet.Add(inflectionPoint + new Vector3d(-1, 0, -1));
+                continue;
+            }
+            else
+            {
+                //如果没有障碍物，此时的情况就是崭新的新线段
+                //如果线段已经有了拐点，并且新线段经过了拐点，则代表线段不合法
+                if (result[index].HasInflection && tempHashSet.Contains(result[index].InflectionPoint))
                 {
-                    //如果完全一致，则判断下一个点
-                    index++;
-                    break;
-                }
-                List<OptimizeGrid> tempList = new();
-                //如果两点之间存在障碍物，则跳至下一个遍历点
-                if (!CheckObsBy2Point(result[index].Pos, result[j].Pos, ref tempList))
-                {
-                    //有障碍物，下一个遍历点
+                    //线段不合法，下一个遍历点
                     continue;
                 }
-                else
+                //如果线段没有拐点，则代表线段直接合法
+                //首先刷新新的线段到旧路径中去
+                for (int i = 0; i < tempList.Count; i++)
                 {
-                    //如果没有障碍物，此时的情况就是崭新的新线段
-                    //首先刷新新的线段到旧路径中去
-                    for (int i = 0; i < tempList.Count; i++)
+                    result[index + i] = tempList[i];
+                    if (tempHashSet.Count != 0)
                     {
-                        result[index + i] = tempList[i];
+                        Vector3d tempInflectionPoint = GetInflectionPoint(tempHashSet, tempList);
+                        result[index + i].InflectionPoint = tempInflectionPoint;
+                        result[index + i].HasInflection = true;
                     }
-                    index++;
-                    break;
                 }
+                index++;
+                return result;
             }
         }
-
-        //List<Vector3d> tempList2 = new();
-        //for (int i = 0; i < result.Count; i++)
-        //{
-        //    tempList2.Add(result[i].Pos);
-        //}
         return result;
     }
 
-    public bool CheckObsBy2Point(Vector3d startPoint, Vector3d endPoint, ref List<OptimizeGrid> gridList)
+    public bool CheckInflectionPointOnLine(Vector3d inflectionPoint, List<OptimizePoint> listNewLine)
+    {
+        for (int i = 0; i < listNewLine.Count; i++)
+        {
+            if (listNewLine[i].Pos == inflectionPoint)
+            {
+                return false;
+            }
+        }
+        return true;
+    }
+
+    public Vector3d GetInflectionPoint(HashSet<Vector3d> hashSetInfPoints, List<OptimizePoint> listNewLine)
+    {
+        for (int i = 0; i < listNewLine.Count; i++)
+        {
+            if (hashSetInfPoints.Contains(listNewLine[i].Pos))
+            {
+                return listNewLine[i].Pos;
+            }
+        }
+        return Vector3d.zero;
+    }
+
+    public bool CheckObsBy2Point(Vector3d startPoint, Vector3d endPoint, ref List<OptimizePoint> gridList, ref Vector3d inflectionPoint)
     {
         gridList = new();
         Vector3d targetDir = (endPoint - startPoint).normalized;
@@ -122,6 +166,7 @@ public class AStarOptimize2
                 }
                 else
                 {
+                    inflectionPoint = tempCheck1;
                     return false;
                 }
             }
@@ -135,6 +180,7 @@ public class AStarOptimize2
                 }
                 else
                 {
+                    inflectionPoint = tempCheck2;
                     return false;
                 }
             }
@@ -153,8 +199,8 @@ public class AStarOptimize2
                     }
                     else
                     {
+                        inflectionPoint = tempCheck1;
                         return false;
-
                     }
                 }
                 else if (dis2 < dis1)
@@ -166,6 +212,7 @@ public class AStarOptimize2
                     }
                     else
                     {
+                        inflectionPoint = tempCheck2;
                         return false;
                     }
                 }
@@ -185,6 +232,7 @@ public class AStarOptimize2
                     }
                     else
                     {
+                        inflectionPoint = tempCheck1;
                         return false;
                     }
                 }
@@ -192,35 +240,32 @@ public class AStarOptimize2
         }
         return true;
     }
-
-    public bool Check2LineSame(List<Vector3d> line1, List<Vector3d> line2)
-    {
-        if (line1.Count != line2.Count)
-        {
-            Debug.LogError("错误！两条线不一样长！");
-            return false;
-        }
-        for (int i = 0; i < line1.Count; i++)
-        {
-            if (line1[i] != line2[i])
-            {
-                return false;
-            }
-        }
-        return true;
-    }
 }
 
-public class OptimizeGrid
+public class OptimizePoint
 {
     public Vector3d Pos;
     public Vector3d TargetPos;
+    public Vector3d InflectionPoint;
     public bool HasTarget = false;
+    public bool HasInflection = false;
 
-    public OptimizeGrid(Vector3d pos, Vector3d targetPos, bool hasTarget)
+    public OptimizePoint(Vector3d pos, Vector3d targetPos, bool hasTarget)
     {
         Pos = pos;
         TargetPos = targetPos;
         HasTarget = hasTarget;
     }
+    public void SetInflection(Vector3d inflectionPoint, bool hasInflection)
+    {
+        InflectionPoint = inflectionPoint;
+        HasInflection = hasInflection;
+    }
+}
+
+public class OptimizeLine
+{
+    List<Vector3d> listPoints = new();
+    Vector3d startPoint;
+    Vector3d endPoint;
 }
