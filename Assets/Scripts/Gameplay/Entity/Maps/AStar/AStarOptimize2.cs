@@ -60,18 +60,19 @@ public class AStarOptimize2
                 Vector3d tempInf2 = new(0, 1, 0);
                 //1.计算各种情况下的拐点
                 //判断各种情况
-                if (i == count - 1 && index != 0)
+                if (obsPos.Count > 0)
                 {
-                    //新线段尾部在终点且头不在起点,反向使用函数
-
-                    tempInf1 = CalcInflectionPoint(result[i].Pos, result[index - 1].Pos, result[index].Pos, obsPos[0]);
-                    tempInf2 = CalcInflectionPoint(result[i].Pos, result[index - 1].Pos, result[index].Pos, obsPos[^1]);
-                }
-                else if (i != count - 1)
-                {
-                    tempInf1 = CalcInflectionPoint(result[index].Pos, result[i + 1].Pos, result[i].Pos, obsPos[0]);
-                    tempInf2 = CalcInflectionPoint(result[index].Pos, result[i + 1].Pos, result[i].Pos, obsPos[^1]);
-
+                    if (i == count - 1 && index != 0)
+                    {
+                        //新线段尾部在终点且头不在起点,反向使用函数
+                        tempInf1 = CalcInflectionPoint(result[i].Pos, result[index - 1].Pos, result[index].Pos, obsPos[0]);
+                        tempInf2 = CalcInflectionPoint(result[i].Pos, result[index - 1].Pos, result[index].Pos, obsPos[^1]);
+                    }
+                    else if (i != count - 1)
+                    {
+                        tempInf1 = CalcInflectionPoint(result[index].Pos, result[i + 1].Pos, result[i].Pos, obsPos[0]);
+                        tempInf2 = CalcInflectionPoint(result[index].Pos, result[i + 1].Pos, result[i].Pos, obsPos[^1]);
+                    }
                 }
 
                 lastObsPos.Clear();

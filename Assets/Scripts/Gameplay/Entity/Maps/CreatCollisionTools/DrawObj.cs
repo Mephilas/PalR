@@ -19,7 +19,7 @@ public class DrawObj : MonoBehaviour
     ObsCreater m_ObjCreater = new();
     public GameObject m_Father;
     AStar aStar = new();
-    AStarOptimize2 aStarOptimize = new();
+    AStarOptimize aStarOptimize = new();
 
     List<Vector3d> localVertices = new();
     private void Start()
@@ -142,7 +142,6 @@ public class DrawObj : MonoBehaviour
             {
                 tempWay2.Add(tempgridlist[i].Pos);
             }
-
 
             tempWay3.Clear();
             tempWay3 = new(tempgridlist2);
