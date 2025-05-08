@@ -73,11 +73,10 @@ public class AStarOptimize
                             tempInf1 = CalcInflectionPoint(result[index].Pos, result[i + 1].Pos, result[i].Pos, obsPos[0]);
                             tempInf2 = CalcInflectionPoint(result[index].Pos, result[i + 1].Pos, result[i].Pos, obsPos[^1]);
                         }
+                        lastObsPos.Clear();
+                        lastObsPos.Add(tempInf1);
+                        lastObsPos.Add(tempInf2);
                     }
-
-                    lastObsPos.Clear();
-                    lastObsPos.Add(tempInf1);
-                    lastObsPos.Add(tempInf2);
 
                     //判断点是否有目标点
                     if (result[index].TargetIndex != -1)
@@ -138,6 +137,15 @@ public class AStarOptimize
                                 break;
                             }
                         }
+
+                        if (InfIndex1 == -1 || InfIndex2 == -1)
+                        {
+                            Debug.Log(InfIndex1);
+                            Debug.Log(InfIndex2);
+
+                            Debug.Log(tempList.Count);
+                        }
+
 
                         //2.2处理线段前后半段的数据
                         for (int j = 0; j < tempList.Count; j++)
@@ -214,6 +222,7 @@ public class AStarOptimize
 
             if (tempCheck1 == endPoint || tempCheck2 == endPoint)
             {
+                gridList.Add(endPoint);
                 break;
             }
 
@@ -257,7 +266,7 @@ public class AStarOptimize
                 }
                 else if (dis2 < dis1)
                 {
-                    if (!Map.Obstacles2Ds.ContainsKey(tempCheck2))
+                    if (Map.Obstacles2Ds.ContainsKey(tempCheck2))
                     {
                         obsPos.Add(tempCheck2);
                     }

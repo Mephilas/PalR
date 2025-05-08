@@ -116,8 +116,8 @@ public class DrawObj : MonoBehaviour
         {
             Debug.Log("DrawObj:寻路测试");
             m_AStarMap.Obstacles2Ds.Clear();
-            tempWay = aStar.AStarCalc(new Vector3d(88, 0, 227), new Vector3d(128, 0, 279), m_SelectMap);
-            //tempWay = aStar.AStarCalc(startAStar, mousePoint, m_SelectMap);
+            //tempWay = aStar.AStarCalc(new Vector3d(88, 0, 227), new Vector3d(128, 0, 279), m_SelectMap);
+            tempWay = aStar.AStarCalc(startAStar, mousePoint, m_SelectMap);
             tempWay2 = new(tempWay);
             for (int i = 0; i < tempWay.Count; i++)
             {
