@@ -117,6 +117,7 @@ public class DrawObj : MonoBehaviour
             Debug.Log("DrawObj:寻路测试");
             m_AStarMap.Obstacles2Ds.Clear();
             tempWay = aStar.AStarCalc(new Vector3d(88, 0, 227), new Vector3d(128, 0, 279), m_SelectMap);
+            //tempWay = aStar.AStarCalc(startAStar, mousePoint, m_SelectMap);
             tempWay2 = new(tempWay);
             for (int i = 0; i < tempWay.Count; i++)
             {
@@ -129,12 +130,12 @@ public class DrawObj : MonoBehaviour
         }
         if (Input.GetKeyDown(KeyCode.P))
         {
-            Debug.Log("DrawObj:优化测试");
+            //Debug.Log("DrawObj:优化测试");
             m_AStarMap.Obstacles2Ds.Clear();
             m_AStarOptimize.Obstacles2Ds.Clear();
             m_AStarOptimize2.Obstacles2Ds.Clear();
-            List<OptimizePoint> tempgridlist2 = new();
-            HashSet<Vector3d> tempVec = new();
+            List<Vector3d> tempgridlist2 = new();
+            List<Vector3d> tempVec = new();
             List<OptimizePoint> tempgridlist = aStarOptimize.NextStep(ref tempgridlist2, ref tempVec);
             tempWay2.Clear();
             for (int i = 0; i < tempgridlist.Count; i++)
@@ -144,13 +145,10 @@ public class DrawObj : MonoBehaviour
 
 
             tempWay3.Clear();
-            for (int i = 0; i < tempgridlist2.Count; i++)
-            {
-                tempWay3.Add(tempgridlist2[i].Pos);
-            }
+            tempWay3 = new(tempgridlist2);
 
             tempWay.Clear();
-            tempWay = new(tempVec.ToList());
+            tempWay = new(tempVec);
 
             for (int i = 0; i < tempWay2.Count; i++)
             {
