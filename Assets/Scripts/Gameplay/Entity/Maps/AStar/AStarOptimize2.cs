@@ -39,6 +39,7 @@ public class AStarOptimize2
 
         for (int i = count - 1; i > index; i--)
         {
+            lastObsPos.Clear();
             //检查点的目标点是终点，则不用继续了返回就行了。
             if (i <= result[index].TargetIndex)
             {
@@ -48,7 +49,7 @@ public class AStarOptimize2
             if (!CheckObsBy2Point(result[index].Pos, result[i].Pos, ref tempList, ref lastObsPos))
             {
                 //连不通
-                obsPos = lastObsPos;
+                obsPos = new(lastObsPos);
                 continue;
             }
             else
@@ -63,13 +64,13 @@ public class AStarOptimize2
                 {
                     //新线段尾部在终点且头不在起点,反向使用函数
 
-                    tempInf1 = CalcInflectionPoint(result[i].Pos, result[index - 1].Pos, result[index].Pos, lastObsPos[0]);
-                    tempInf2 = CalcInflectionPoint(result[i].Pos, result[index - 1].Pos, result[index].Pos, lastObsPos[^1]);
+                    tempInf1 = CalcInflectionPoint(result[i].Pos, result[index - 1].Pos, result[index].Pos, obsPos[0]);
+                    tempInf2 = CalcInflectionPoint(result[i].Pos, result[index - 1].Pos, result[index].Pos, obsPos[^1]);
                 }
                 else if (i != count - 1)
                 {
-                    tempInf1 = CalcInflectionPoint(result[index].Pos, result[i + 1].Pos, result[i].Pos, lastObsPos[0]);
-                    tempInf1 = CalcInflectionPoint(result[index].Pos, result[i + 1].Pos, result[i].Pos, lastObsPos[^1]);
+                    tempInf1 = CalcInflectionPoint(result[index].Pos, result[i + 1].Pos, result[i].Pos, obsPos[0]);
+                    tempInf2 = CalcInflectionPoint(result[index].Pos, result[i + 1].Pos, result[i].Pos, obsPos[^1]);
 
                 }
 
@@ -220,27 +221,21 @@ public class AStarOptimize2
             if (dir1 > dir2)
             {
                 //dir1更贴合原斜率
-                if (!Map.Obstacles2Ds.ContainsKey(tempCheck1))
-                {
-                    tempPos = tempCheck1;
-                }
-                else
+                if (Map.Obstacles2Ds.ContainsKey(tempCheck1))
                 {
                     obsPos.Add(tempCheck1);
                 }
+                tempPos = tempCheck1;
                 gridList.Add(tempCheck1);
             }
             else if (dir1 < dir2)
             {
                 //dir2更贴合原斜率
-                if (!Map.Obstacles2Ds.ContainsKey(tempCheck2))
-                {
-                    tempPos = tempCheck2;
-                }
-                else
+                if (Map.Obstacles2Ds.ContainsKey(tempCheck2))
                 {
                     obsPos.Add(tempCheck2);
                 }
+                tempPos = tempCheck2;
                 gridList.Add(tempCheck2);
             }
             else
@@ -251,26 +246,20 @@ public class AStarOptimize2
                 double dis2 = (tempCheck2 - endPoint).magnitude;
                 if (dis1 < dis2)
                 {
-                    if (!Map.Obstacles2Ds.ContainsKey(tempCheck1))
-                    {
-                        tempPos = tempCheck1;
-                    }
-                    else
+                    if (Map.Obstacles2Ds.ContainsKey(tempCheck1))
                     {
                         obsPos.Add(tempCheck1);
                     }
+                    tempPos = tempCheck1;
                     gridList.Add(tempCheck1);
                 }
                 else if (dis2 < dis1)
                 {
                     if (!Map.Obstacles2Ds.ContainsKey(tempCheck2))
                     {
-                        tempPos = tempCheck2;
-                    }
-                    else
-                    {
                         obsPos.Add(tempCheck2);
                     }
+                    tempPos = tempCheck2;
                     gridList.Add(tempCheck2);
                 }
                 else
@@ -289,6 +278,7 @@ public class AStarOptimize2
                     }
                     else
                     {
+                        tempPos = tempCheck1;
                         obsPos.Add(tempCheck1);
                         gridList.Add(tempCheck1);
                     }

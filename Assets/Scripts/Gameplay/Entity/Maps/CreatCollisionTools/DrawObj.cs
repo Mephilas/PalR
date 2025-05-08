@@ -148,7 +148,7 @@ public class DrawObj : MonoBehaviour
             tempWay3 = new(tempgridlist2);
 
             tempWay.Clear();
-            tempWay = new(tempVec);
+            tempWay = new(tempVec.ToHashSet().ToList());
 
             for (int i = 0; i < tempWay2.Count; i++)
             {
