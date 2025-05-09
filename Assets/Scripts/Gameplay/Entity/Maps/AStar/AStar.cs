@@ -40,7 +40,6 @@ public class AStar
             {
                 if (!AllGrid.ContainsKey(EndPoint))
                 {
-                    Debug.LogError("Ѱ·ʧ�ܣ�");
                     break;
                 }
                 AStarGrid tempGrid = AllGrid[EndPoint];

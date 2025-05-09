@@ -77,7 +77,7 @@ public class DrawObj : MonoBehaviour
         {
             for (int j = 0; j < v.Value.WorldVertices.Count; j++)
             {
-                Debug.DrawLine(v.Value.WorldVertices[j], v.Value.WorldVertices[(j + 1) % v.Value.WorldVertices.Count], Color.cyan);
+                Debug.DrawLine(v.Value.WorldVertices[j], v.Value.WorldVertices[(j + 1) % v.Value.WorldVertices.Count], Color.green);
             }
         }
 
@@ -115,27 +115,16 @@ public class DrawObj : MonoBehaviour
         {
             Debug.Log("DrawObj:寻路测试");
             m_AStarMap.Obstacles2Ds.Clear();
+            m_AStarOptimize.Obstacles2Ds.Clear();
             //tempWay = aStar.AStarCalc(new Vector3d(88, 0, 227), new Vector3d(128, 0, 279), m_SelectMap);
             tempWay = aStar.AStarCalc(startAStar, mousePoint, m_SelectMap);
-            tempWay2 = new(tempWay);
+            tempWay2 = new(aStarOptimize.Init(tempWay, m_SelectMap));
             for (int i = 0; i < tempWay.Count; i++)
             {
                 Obstacles2D obstacle0 = new(localVertices, ToolM.GetWorldPosByGrid(tempWay[i]), tempWay[i]);
                 m_AStarMap.Obstacles2Ds.Add(tempWay[i], obstacle0);
             }
             m_AStarMap = MapCoordinateTransformation.MapTrans(m_AStarMap);
-        }
-        if (Input.GetKeyDown(KeyCode.P))
-        {
-            Debug.Log("DrawObj:优化测试");
-            m_AStarOptimize.Obstacles2Ds.Clear();
-
-            List<OptimizePoint> tempgridlist = aStarOptimize.Init(tempWay2, m_SelectMap); ;
-            tempWay2.Clear();
-            for (int i = 0; i < tempgridlist.Count; i++)
-            {
-                tempWay2.Add(tempgridlist[i].Pos);
-            }
 
             for (int i = 0; i < tempWay2.Count; i++)
             {
@@ -144,14 +133,18 @@ public class DrawObj : MonoBehaviour
             }
             m_AStarOptimize = MapCoordinateTransformation.MapTrans(m_AStarOptimize);
         }
+        if (Input.GetKeyDown(KeyCode.P))
+        {
+
+        }
 
         foreach (var v in m_AStarMap.Obstacles2Ds)
         {
-            Debug.DrawLine(v.Value.WorldVertices[0], v.Value.WorldVertices[2], new Color(135f / 255f, 206f / 255f, 235f / 255f));
-            Debug.DrawLine(v.Value.WorldVertices[1], v.Value.WorldVertices[3], new Color(135f / 255f, 206f / 255f, 235f / 255f));
+            Debug.DrawLine(v.Value.WorldVertices[0], v.Value.WorldVertices[2], Color.cyan);
+            Debug.DrawLine(v.Value.WorldVertices[1], v.Value.WorldVertices[3], Color.cyan);
             for (int j = 0; j < v.Value.WorldVertices.Count; j++)
             {
-                Debug.DrawLine(v.Value.WorldVertices[j], v.Value.WorldVertices[(j + 1) % v.Value.WorldVertices.Count], new Color(135f / 255f, 206f / 255f, 235f / 255f));
+                Debug.DrawLine(v.Value.WorldVertices[j], v.Value.WorldVertices[(j + 1) % v.Value.WorldVertices.Count], Color.cyan);
             }
         }
 

@@ -9,11 +9,13 @@ public class AStarOptimize
     List<Vector3d> obsPos = new();
     List<Vector3d> lastObsPos = new();
     List<Vector3d> listGrid = new();
+    List<Vector3d> listResult = new();
 
-    public List<OptimizePoint> Init(List<Vector3d> aStarList, Map map)
+    public List<Vector3d> Init(List<Vector3d> aStarList, Map map)
     {
         Map = map;
         result.Clear();
+        listResult.Clear();
         for (int i = 0; i < aStarList.Count; i++)
         {
             result.Add(new(i, aStarList[i]));
@@ -23,7 +25,11 @@ public class AStarOptimize
         {
             NextStep();
         }
-        return result;
+        for (int i = 0; i < count; i++)
+        {
+            listResult.Add(result[i].Pos);
+        }
+        return listResult;
     }
 
     /// <summary>
