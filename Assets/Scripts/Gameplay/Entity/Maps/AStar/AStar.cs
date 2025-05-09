@@ -8,11 +8,8 @@ public class AStar
     Vector3d StartPoint;
     Vector3d EndPoint;
     Map Map;
-
     List<AStarGrid> CheckList = new();
     Dictionary<Vector3d, AStarGrid> AllGrid = new();
-
-
 
     /// <summary>
     /// 获得A*路线
@@ -23,6 +20,7 @@ public class AStar
     /// <returns></returns>
     public List<Vector3d> AStarCalc(Vector3d startPoint, Vector3d endPoint, Map map)
     {
+        int count = 0;
         List<Vector3d> result = new();
         StartPoint = startPoint;
         EndPoint = endPoint;
@@ -35,10 +33,16 @@ public class AStar
         };
         CheckList.Add(startGrid);
         AllGrid.Add(StartPoint, startGrid);
-        for (; ; )
+        for (; count < 10000;)
         {
+            count++;
             if (NextStep())
             {
+                if (!AllGrid.ContainsKey(EndPoint))
+                {
+                    Debug.LogError("寻路失败！");
+                    break;
+                }
                 AStarGrid tempGrid = AllGrid[EndPoint];
                 for (; ; )
                 {
@@ -52,10 +56,6 @@ public class AStar
                 break;
             }
         }
-        //计算拐点
-        //result = InflectionPointCalcByAStar(result);
-
-
         return result;
     }
 
@@ -64,7 +64,6 @@ public class AStar
         //先检查当前列表是否还有遍历的格子
         if (CheckList.Count == 0)
         {
-            Debug.Log("无路可走！");
             return true;
         }
         //取出第一个格子来检查
