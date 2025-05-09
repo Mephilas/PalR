@@ -62,17 +62,9 @@ public class AStarOptimize
                     //判断各种情况
                     if (obsPos.Count > 0)
                     {
-                        if (i == count - 1 && index != 0)
-                        {
-                            //新线段尾部在终点且头不在起点,反向使用函数
-                            tempInf1 = CalcInflectionPoint(result[i].Pos, result[index - 1].Pos, result[index].Pos, obsPos[0]);
-                            tempInf2 = CalcInflectionPoint(result[i].Pos, result[index - 1].Pos, result[index].Pos, obsPos[^1]);
-                        }
-                        else if (i != count - 1)
-                        {
-                            tempInf1 = CalcInflectionPoint(result[index].Pos, result[i + 1].Pos, result[i].Pos, obsPos[0]);
-                            tempInf2 = CalcInflectionPoint(result[index].Pos, result[i + 1].Pos, result[i].Pos, obsPos[^1]);
-                        }
+                        tempInf1 = CalcInflectionPoint(result[index].Pos, result[i + 1].Pos, result[i].Pos, obsPos[0]);
+                        tempInf2 = CalcInflectionPointI(result[index].Pos, result[i + 1].Pos, result[i].Pos, obsPos[^1]);
+
                         lastObsPos.Clear();
                         lastObsPos.Add(tempInf1);
                         lastObsPos.Add(tempInf2);
@@ -308,7 +300,7 @@ public class AStarOptimize
     }
 
     /// <summary>
-    /// 计算拐点
+    /// 计算拐点(正向)
     /// </summary>
     /// <param name="checkPos"></param>
     /// <param name="lastPos"></param>
@@ -365,4 +357,63 @@ public class AStarOptimize
             return Left;
         }
     }
+    /// <summary>
+    /// 计算拐点(逆向)
+    /// </summary>
+    /// <param name="checkPos"></param>
+    /// <param name="lastPos"></param>
+    /// <param name="truePos"></param>
+    /// <param name="obsPos"></param>
+    /// <returns></returns>
+    public Vector3d CalcInflectionPointI(Vector3d checkPos, Vector3d lastPos, Vector3d truePos, Vector3d obsPos)
+    {
+        Vector3d trueDir = checkPos - truePos;
+        Vector3d lastDir = checkPos - lastPos;
+        Vector3d Left;
+        Vector3d Right;
+
+        double tempX = 0;
+        double tempZ = 0;
+
+        if (lastDir.x < 0)
+        {
+            tempZ = -1;
+        }
+        else if (lastDir.x > 0)
+        {
+            tempZ = 1;
+        }
+        if (lastDir.z > 0)
+        {
+            tempX = -1;
+        }
+        else if (lastDir.z < 0)
+        {
+            tempX = 1;
+        }
+
+        Left = new(tempX, 0, tempZ);
+        Right = new(-tempX, 0, -tempZ);
+        if (lastDir.x == 0)
+        {
+            Left = new(tempX, 0, tempX);
+            Right = new(-tempX, 0, tempX);
+        }
+        if (lastDir.z == 0)
+        {
+            Left = new(-tempZ, 0, tempZ);
+            Right = new(-tempZ, 0, -tempZ);
+        }
+        Left = Left + obsPos;
+        Right = Right + obsPos;
+        if (Vector3d.Cross(lastDir, trueDir).y < 0)
+        {
+            return Right;
+        }
+        else
+        {
+            return Left;
+        }
+    }
 }
+

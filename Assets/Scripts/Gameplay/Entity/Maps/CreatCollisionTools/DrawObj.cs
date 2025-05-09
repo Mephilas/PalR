@@ -130,7 +130,7 @@ public class DrawObj : MonoBehaviour
         }
         if (Input.GetKeyDown(KeyCode.P))
         {
-            //Debug.Log("DrawObj:优化测试");
+            Debug.Log("DrawObj:优化测试");
             m_AStarMap.Obstacles2Ds.Clear();
             m_AStarOptimize.Obstacles2Ds.Clear();
             m_AStarOptimize2.Obstacles2Ds.Clear();
@@ -144,7 +144,7 @@ public class DrawObj : MonoBehaviour
             }
 
             tempWay3.Clear();
-            tempWay3 = new(tempgridlist2);
+            //tempWay3 = new(tempgridlist2);
 
             tempWay.Clear();
             tempWay = new(tempVec.ToHashSet().ToList());
